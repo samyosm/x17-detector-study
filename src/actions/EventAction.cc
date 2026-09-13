@@ -9,11 +9,18 @@
 #include "G4SystemOfUnits.hh"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <cstdint>
+#include <iostream>
 #include <limits>
 
-EventAction::EventAction(const PrimaryGeneratorAction *source)
-    : source_(source) {}
+namespace {
+std::atomic<std::uint64_t> completedEvents{0};
+}
+
+EventAction::EventAction(const PrimaryGeneratorAction *source, int progressInterval)
+    : source_(source), progressInterval_(progressInterval) {}
 
 void EventAction::BeginOfEventAction(const G4Event *) { barEnergy_.fill(0.0); }
 
@@ -90,4 +97,8 @@ void EventAction::EndOfEventAction(const G4Event *event) {
     analysis->FillNtupleDColumn(12 + channel, pmtEnergy_[channel]);
   }
   analysis->AddNtupleRow();
+  const auto completed = completedEvents.fetch_add(1, std::memory_order_relaxed) + 1;
+  if (completed % progressInterval_ == 0) {
+    std::cout << completed << " events processed" << std::endl;
+  }
 }

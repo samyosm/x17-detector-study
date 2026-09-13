@@ -7,7 +7,7 @@ class PrimaryGeneratorAction;
 
 class EventAction final : public G4UserEventAction {
 public:
-    explicit EventAction(const PrimaryGeneratorAction* source);
+    EventAction(const PrimaryGeneratorAction* source, int progressInterval);
     void BeginOfEventAction(const G4Event*) override;
     void EndOfEventAction(const G4Event* event) override;
     void AddBarEnergy(int bar, double energy);
@@ -24,4 +24,5 @@ private:
     std::array<double, 3> positronMomentumMeV_{};
     std::array<double, 3> electronMomentumMeV_{};
     const PrimaryGeneratorAction* source_ = nullptr;
+    int progressInterval_;
 };

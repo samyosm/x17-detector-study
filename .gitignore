@@ -3,6 +3,8 @@
 /pmt_readout.root
 .codex/
 .agents/
+data/*
+analysis/__marimo__
 
 # Created by https://www.toptal.com/developers/gitignore/api/git,vs,cmake,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,vs,cmake,python

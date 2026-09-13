@@ -23,6 +23,7 @@ int main() {
             config.sourceMode,
             config.transitionEnergyMeV * MeV,
             config.x17MassMeV * MeV,
+            config.x17Fraction,
             config.gunParticle,
             config.gunEnergyMeV * MeV,
             {position[0] * cm, position[1] * cm, position[2] * cm},
@@ -36,7 +37,8 @@ int main() {
             new DetectorConstruction(config.geometryFile.string()));
         runManager->SetUserInitialization(new FTFP_BERT);
         runManager->SetUserInitialization(
-            new ActionInitialization(source, config.outputFile));
+            new ActionInitialization(source, config.outputFile,
+                                     config.progressInterval));
         runManager->Initialize();
 
         auto* ui = G4UImanager::GetUIpointer();

@@ -2,6 +2,7 @@
 
 #include "GunSource.hh"
 #include "IpcSource.hh"
+#include "MixedSource.hh"
 #include "X17Source.hh"
 
 #include <stdexcept>
@@ -17,6 +18,11 @@ std::unique_ptr<PrimarySource> MakeSource(const SourceSettings &settings) {
   if (settings.mode == "x17") {
     return std::make_unique<X17Source>(settings.transitionEnergy,
                                        settings.x17Mass);
+  }
+  if (settings.mode == "mixed") {
+    return std::make_unique<MixedSource>(settings.transitionEnergy,
+                                          settings.x17Mass,
+                                          settings.x17Fraction);
   }
   throw std::invalid_argument("Unknown source mode: " + settings.mode);
 }

@@ -45,22 +45,28 @@ SimulationConfig LoadConfiguration() {
 
     const auto threads = Required<std::int64_t>(document, "runtime.threads");
     const auto events = Required<std::int64_t>(document, "runtime.events");
+    const auto progressInterval = Required<std::int64_t>(document, "runtime.progress_interval");
     if (threads < 1 || threads > 1024) {
         throw std::runtime_error("runtime.threads must be between 1 and 1024");
     }
     if (events < 1 || events > 1000000000) {
         throw std::runtime_error("runtime.events must be between 1 and 1000000000");
     }
+    if (progressInterval < 1 || progressInterval > 1000000000) {
+        throw std::runtime_error("runtime.progress_interval must be between 1 and 1000000000");
+    }
     SimulationConfig config{
         Required<std::string>(document, "runtime.mode"),
         static_cast<int>(threads),
         static_cast<int>(events),
+        static_cast<int>(progressInterval),
         resolve(Required<std::string>(document, "runtime.geometry_file")),
         resolve(Required<std::string>(document, "runtime.visualization_macro")),
         Required<std::string>(document, "runtime.output_file"),
         Required<std::string>(document, "source.mode"),
         Required<double>(document, "source.transition_energy_mev"),
         Required<double>(document, "source.x17_mass_mev"),
+        Required<double>(document, "source.x17_fraction"),
         Required<std::string>(document, "source.gun_particle"),
         Required<double>(document, "source.gun_energy_mev"),
         Vector(document, "source.gun_position_cm"),
@@ -70,8 +76,8 @@ SimulationConfig LoadConfiguration() {
         throw std::runtime_error("runtime.mode must be batch or visualization");
     }
     if (config.sourceMode != "gun" && config.sourceMode != "ipc" &&
-        config.sourceMode != "x17") {
-        throw std::runtime_error("source.mode must be gun, ipc, or x17");
+        config.sourceMode != "x17" && config.sourceMode != "mixed") {
+        throw std::runtime_error("source.mode must be gun, ipc, x17, or mixed");
     }
     if (std::filesystem::path(config.outputFile).extension() != ".root") {
         throw std::runtime_error("runtime.output_file must end in .root");
@@ -81,6 +87,10 @@ SimulationConfig LoadConfiguration() {
         config.transitionEnergyMeV <= 0 || config.x17MassMeV <= 0 ||
         config.gunEnergyMeV < 0) {
         throw std::runtime_error("Source energies and mass must be finite and valid");
+    }
+    if (!std::isfinite(config.x17Fraction) || config.x17Fraction <= 0.0 ||
+        config.x17Fraction >= 1.0) {
+        throw std::runtime_error("source.x17_fraction must be between 0 and 1");
     }
     const auto& direction = config.gunDirection;
     if (direction[0] == 0 && direction[1] == 0 && direction[2] == 0) {

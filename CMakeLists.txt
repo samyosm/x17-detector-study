@@ -17,6 +17,7 @@ add_executable(simulate_detection
     src/source/PairSource.cc
     src/source/IpcSource.cc
     src/source/X17Source.cc
+    src/source/MixedSource.cc
 )
 target_compile_features(simulate_detection PRIVATE cxx_std_17)
 target_include_directories(simulate_detection PRIVATE src ${TOMLPLUSPLUS_INCLUDE_DIR})

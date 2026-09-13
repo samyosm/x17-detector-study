@@ -1,15 +1,17 @@
 [runtime]
-mode = "batch"                           # batch or visualization
+mode = "batch"                            # batch or visualization
 threads = 20
 geometry_file = "../geometry/world.gdml"
-events = 10
-visualization_macro = "vis.mac"
-output_file = "pmt_readout.root"
+events = 10_000_000
+progress_interval = 100000
+visualization_macro = "../macros/vis.mac"
+output_file = "data/mixed_readout.root"
 
 [source]
-mode = "ipc"                      # gun, ipc, or x17
+mode = "mixed"                    # gun, ipc, x17, or mixed
 transition_energy_mev = 18.15
 x17_mass_mev = 17.0
+x17_fraction = 1e-3               # probability of X17 per event
 gun_particle = "geantino"
 gun_energy_mev = 1.0
 gun_position_cm = [0.0, 0.0, 0.0]

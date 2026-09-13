@@ -2,7 +2,6 @@
 
 #include "PrimarySource.hh"
 
-// Shared two-body recoil and isotropic e+e- decay kinematics for pair modes.
 class PairSource : public PrimarySource {
 public:
   explicit PairSource(double transitionEnergy);
