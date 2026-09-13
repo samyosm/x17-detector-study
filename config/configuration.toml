@@ -1,0 +1,39 @@
+[runtime]
+mode = "batch"                           # batch or visualization
+threads = 20
+geometry_file = "../geometry/world.gdml"
+events = 10
+visualization_macro = "vis.mac"
+output_file = "pmt_readout.root"
+
+[source]
+mode = "ipc"                      # gun, ipc, or x17
+transition_energy_mev = 18.15
+x17_mass_mev = 17.0
+gun_particle = "geantino"
+gun_energy_mev = 1.0
+gun_position_cm = [0.0, 0.0, 0.0]
+gun_direction = [0.0, 0.0, 1.0]
+
+[geometry]
+scintillator_count = 16
+scintillator_length_cm = 140.0
+scintillator_inner_radius_cm = 16.0
+scintillator_radial_thickness_cm = 10.0
+scintillator_tangential_width_cm = 5.5  # placeholder
+mwpc_inner_radius_cm = 6.0
+mwpc_length_cm = 36.0
+mwpc_wall_thickness_cm = 0.1
+rohacell_density_g_cm3 = 0.052          # assumed 51-grade foam
+pmt_radius_cm = 2.5                     # placeholder
+pmt_length_cm = 10.0                    # placeholder
+beamline_length_cm = 30.0               # placeholder
+beamline_outer_radius_cm = 2.5          # placeholder
+beamline_wall_cm = 0.08
+target_radius_cm = 1.0                  # placeholder
+al_foil_thickness_cm = 0.002            # placeholder
+lif_thickness_cm = 0.0001               # placeholder
+target_layer_gap_cm = 0.000001          # navigation gap
+cooling_rod_radius_cm = 0.05            # placeholder
+cooling_rod_length_cm = 1.32            # placeholder
+cooling_rod_center_y_cm = 1.71          # placeholder

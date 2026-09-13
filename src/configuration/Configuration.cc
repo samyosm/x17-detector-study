@@ -1,0 +1,90 @@
+#include "Configuration.hh"
+
+#include <toml++/toml.h>
+
+#include <cmath>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+
+namespace {
+
+template <typename T>
+T Required(const toml::table& document, const char* key) {
+    const auto value = document.at_path(key).value<T>();
+    if (!value) throw std::runtime_error(std::string("Missing or invalid TOML value: ") + key);
+    return *value;
+}
+
+std::array<double, 3> Vector(const toml::table& document, const char* key) {
+    const auto* values = document.at_path(key).as_array();
+    if (!values || values->size() != 3) {
+        throw std::runtime_error(std::string("Expected three TOML numbers: ") + key);
+    }
+    std::array<double, 3> result;
+    for (std::size_t i = 0; i < result.size(); ++i) {
+        const auto value = (*values)[i].value<double>();
+        if (!value || !std::isfinite(*value)) {
+            throw std::runtime_error(std::string("Invalid TOML vector: ") + key);
+        }
+        result[i] = *value;
+    }
+    return result;
+}
+
+} // namespace
+
+SimulationConfig LoadConfiguration() {
+    const std::filesystem::path file = CONFIG_PATH;
+    const auto document = toml::parse_file(file.string());
+    const auto resolve = [&file](const std::string& value) {
+        if (value.empty()) throw std::runtime_error("Empty configuration path");
+        const std::filesystem::path path(value);
+        return (path.is_absolute() ? path : file.parent_path() / path).lexically_normal();
+    };
+
+    const auto threads = Required<std::int64_t>(document, "runtime.threads");
+    const auto events = Required<std::int64_t>(document, "runtime.events");
+    if (threads < 1 || threads > 1024) {
+        throw std::runtime_error("runtime.threads must be between 1 and 1024");
+    }
+    if (events < 1 || events > 1000000000) {
+        throw std::runtime_error("runtime.events must be between 1 and 1000000000");
+    }
+    SimulationConfig config{
+        Required<std::string>(document, "runtime.mode"),
+        static_cast<int>(threads),
+        static_cast<int>(events),
+        resolve(Required<std::string>(document, "runtime.geometry_file")),
+        resolve(Required<std::string>(document, "runtime.visualization_macro")),
+        Required<std::string>(document, "runtime.output_file"),
+        Required<std::string>(document, "source.mode"),
+        Required<double>(document, "source.transition_energy_mev"),
+        Required<double>(document, "source.x17_mass_mev"),
+        Required<std::string>(document, "source.gun_particle"),
+        Required<double>(document, "source.gun_energy_mev"),
+        Vector(document, "source.gun_position_cm"),
+        Vector(document, "source.gun_direction")
+    };
+    if (config.mode != "batch" && config.mode != "visualization") {
+        throw std::runtime_error("runtime.mode must be batch or visualization");
+    }
+    if (config.sourceMode != "gun" && config.sourceMode != "ipc" &&
+        config.sourceMode != "x17") {
+        throw std::runtime_error("source.mode must be gun, ipc, or x17");
+    }
+    if (std::filesystem::path(config.outputFile).extension() != ".root") {
+        throw std::runtime_error("runtime.output_file must end in .root");
+    }
+    if (!std::isfinite(config.transitionEnergyMeV) ||
+        !std::isfinite(config.x17MassMeV) || !std::isfinite(config.gunEnergyMeV) ||
+        config.transitionEnergyMeV <= 0 || config.x17MassMeV <= 0 ||
+        config.gunEnergyMeV < 0) {
+        throw std::runtime_error("Source energies and mass must be finite and valid");
+    }
+    const auto& direction = config.gunDirection;
+    if (direction[0] == 0 && direction[1] == 0 && direction[2] == 0) {
+        throw std::runtime_error("source.gun_direction must be nonzero");
+    }
+    return config;
+}

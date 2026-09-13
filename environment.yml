@@ -1,0 +1,17 @@
+name: x17-detector-study
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - marimo
+  - matplotlib
+  - pandas
+  - pythia8
+  - hepmc3
+  - geant4
+  - qt-main
+  - root
+  - uproot
+  - tomlplusplus
+  - cmake
