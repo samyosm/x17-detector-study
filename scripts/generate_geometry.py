@@ -137,7 +137,7 @@ def main():
         aunit="deg",
         lunit="cm",
     )
-    # Transverse clearance through the chamber for the x-axis beamline.
+    # Coaxial clearance through the chamber for the z-axis beamline.
     node(solids, "tube", name="BeamlineClearance", rmin=0,
          rmax=BEAMLINE_OUTER_RADIUS_CM + 0.001,
          z=BEAMLINE_LENGTH_CM + 0.2, startphi=0, deltaphi=360,
@@ -170,12 +170,9 @@ def main():
         aunit="deg",
         lunit="cm",
     )
-    for name, first in (("MWPCGasWithBeamPort", "MWPCGasCylinder"),
-                        ("MWPCWallWithBeamPort", "MWPCWallCylinder")):
-        cut = node(solids, "subtraction", name=name)
-        node(cut, "first", ref=first)
-        node(cut, "second", ref="BeamlineClearance")
-        node(cut, "rotation", name=f"{name}_rotation", x=0, y=90, z=0, unit="deg")
+    cut = node(solids, "subtraction", name="MWPCGasWithBeamPort")
+    node(cut, "first", ref="MWPCGasCylinder")
+    node(cut, "second", ref="BeamlineClearance")
     node(
         solids,
         "tube",
@@ -198,7 +195,7 @@ def main():
         return result
 
     volume("MWPCGas", "MWPCGas", "MWPCGasWithBeamPort")
-    volume("MWPCWall", "Rohacell", "MWPCWallWithBeamPort")
+    volume("MWPCWall", "Rohacell", "MWPCWallCylinder")
     volume("BeamlineWall", "CarbonFiber", "BeamlineCarbonShell")
     volume("AlBacking", "AlFoil", "AlBackingDisk")
     volume("Lithium7FluorideTarget", "Lithium7Fluoride", "Lithium7FluorideDisk")
@@ -235,11 +232,11 @@ def main():
 
     place("MWPCGas", "MWPCGas", 0)
     place("MWPCWall", "MWPCWall", 0)
-    # GDML placement rotation -90 deg about y maps local +z to world +x.
-    place("BeamlineVacuum", "BeamlineVacuum", 0, rotation_y=-90)
-    place("BeamlineWall", "BeamlineWall", 0, rotation_y=-90)
+    # Beamline and bars share the z axis.
+    place("BeamlineVacuum", "BeamlineVacuum", 0)
+    place("BeamlineWall", "BeamlineWall", 0)
     # Local coordinates below are relative to the beamline vacuum.
-    # The LiF coating is centered at the origin, facing protons along +x.
+    # The LiF coating is centered at the origin, facing protons along +z.
     coating_offset = ((AL_FOIL_THICKNESS_CM + LIF_THICKNESS_CM) / 2
                       + TARGET_LAYER_GAP_CM) / 2**0.5
     place("Lithium7FluorideTarget", "Lithium7FluorideTarget", 0,

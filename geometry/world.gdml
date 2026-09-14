@@ -99,12 +99,6 @@
     <subtraction name="MWPCGasWithBeamPort">
       <first ref="MWPCGasCylinder" />
       <second ref="BeamlineClearance" />
-      <rotation name="MWPCGasWithBeamPort_rotation" x="0" y="90" z="0" unit="deg" />
-    </subtraction>
-    <subtraction name="MWPCWallWithBeamPort">
-      <first ref="MWPCWallCylinder" />
-      <second ref="BeamlineClearance" />
-      <rotation name="MWPCWallWithBeamPort_rotation" x="0" y="90" z="0" unit="deg" />
     </subtraction>
     <tube name="PMTCylinder" rmin="0" rmax="2.5" z="10.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
   </solids>
@@ -115,7 +109,7 @@
     </volume>
     <volume name="MWPCWall">
       <materialref ref="Rohacell" />
-      <solidref ref="MWPCWallWithBeamPort" />
+      <solidref ref="MWPCWallCylinder" />
     </volume>
     <volume name="BeamlineWall">
       <materialref ref="CarbonFiber" />
@@ -174,12 +168,10 @@
       <physvol name="BeamlineVacuum" copynumber="0">
         <volumeref ref="BeamlineVacuum" />
         <position name="BeamlineVacuum_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-        <rotation name="BeamlineVacuum_rotation" x="0.000000" y="-90.000000" z="0.000000" unit="deg" />
       </physvol>
       <physvol name="BeamlineWall" copynumber="0">
         <volumeref ref="BeamlineWall" />
         <position name="BeamlineWall_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-        <rotation name="BeamlineWall_rotation" x="0.000000" y="-90.000000" z="0.000000" unit="deg" />
       </physvol>
       <physvol name="Scintillator_01" copynumber="1">
         <volumeref ref="Scintillator" />
