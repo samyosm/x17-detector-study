@@ -4,6 +4,8 @@
 #include "source/SourceSettings.hh"
 
 #include "FTFP_BERT.hh"
+#include "G4OpticalParameters.hh"
+#include "G4OpticalPhysics.hh"
 #include "G4RunManagerFactory.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UIExecutive.hh"
@@ -34,11 +36,15 @@ int main() {
             G4RunManagerFactory::CreateRunManager(G4RunManagerType::MT));
         runManager->SetNumberOfThreads(config.threads);
         runManager->SetUserInitialization(
-            new DetectorConstruction(config.geometryFile.string()));
-        runManager->SetUserInitialization(new FTFP_BERT);
+            new DetectorConstruction(config.geometryFile.string(), config.optics));
+        auto* physics = new FTFP_BERT;
+        physics->RegisterPhysics(new G4OpticalPhysics);
+        G4OpticalParameters::Instance()->SetProcessActivation("Cerenkov", false);
+        runManager->SetUserInitialization(physics);
         runManager->SetUserInitialization(
             new ActionInitialization(source, config.outputFile,
-                                     config.progressInterval));
+                                     config.progressInterval,
+                                     config.optics.quantumEfficiency));
         runManager->Initialize();
 
         auto* ui = G4UImanager::GetUIpointer();

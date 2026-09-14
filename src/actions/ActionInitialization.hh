@@ -7,7 +7,8 @@
 class ActionInitialization final : public G4VUserActionInitialization {
 public:
     ActionInitialization(std::shared_ptr<const SourceSettings> settings,
-                         std::string outputFile, int progressInterval);
+                         std::string outputFile, int progressInterval,
+                         double quantumEfficiency);
     void BuildForMaster() const override;
     void Build() const override;
 
@@ -15,4 +16,5 @@ private:
     std::shared_ptr<const SourceSettings> settings_;
     std::string outputFile_;
     int progressInterval_;
+    double quantumEfficiency_;
 };

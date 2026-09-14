@@ -8,9 +8,9 @@
 
 ActionInitialization::ActionInitialization(
     std::shared_ptr<const SourceSettings> settings, std::string outputFile,
-    int progressInterval)
+    int progressInterval, double quantumEfficiency)
     : settings_(std::move(settings)), outputFile_(std::move(outputFile)),
-      progressInterval_(progressInterval) {}
+      progressInterval_(progressInterval), quantumEfficiency_(quantumEfficiency) {}
 
 void ActionInitialization::BuildForMaster() const {
     SetUserAction(new RunAction(outputFile_));
@@ -22,5 +22,5 @@ void ActionInitialization::Build() const {
     SetUserAction(source);
     auto* eventAction = new EventAction(source, progressInterval_);
     SetUserAction(eventAction);
-    SetUserAction(new SteppingAction(eventAction));
+    SetUserAction(new SteppingAction(eventAction, quantumEfficiency_));
 }

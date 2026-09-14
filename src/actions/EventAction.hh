@@ -11,10 +11,12 @@ public:
     void BeginOfEventAction(const G4Event*) override;
     void EndOfEventAction(const G4Event* event) override;
     void AddBarEnergy(int bar, double energy);
+    void AddPmtPhoton(int channel, double time, double energy);
 
 private:
     std::array<double, 16> barEnergy_{};
-    std::array<double, 32> pmtEnergy_{};
+    std::array<int, 32> pmtPhotons_{};
+    std::array<double, 32> firstPmtTimeNs_{};
     int eventId_ = 0;
     int sourceMode_ = 0;
     double pairMassMeV_ = 0.0;

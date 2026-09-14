@@ -4,6 +4,19 @@
 #include <array>
 #include <string>
 
+struct OpticalConfig {
+    double emissionMinEv;
+    double emissionMaxEv;
+    double yieldPerMeV;
+    double resolutionScale;
+    double decayTimeNs;
+    double scintillatorIndex;
+    double scintillatorAbsorptionCm;
+    double airIndex;
+    double glassIndex;
+    double quantumEfficiency;
+};
+
 struct SimulationConfig {
     std::string mode;
     int threads;
@@ -20,6 +33,7 @@ struct SimulationConfig {
     double gunEnergyMeV;
     std::array<double, 3> gunPositionCm;
     std::array<double, 3> gunDirection;
+    OpticalConfig optics;
 };
 
 SimulationConfig LoadConfiguration();

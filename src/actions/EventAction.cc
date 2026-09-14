@@ -22,12 +22,33 @@ std::atomic<std::uint64_t> completedEvents{0};
 EventAction::EventAction(const PrimaryGeneratorAction *source, int progressInterval)
     : source_(source), progressInterval_(progressInterval) {}
 
-void EventAction::BeginOfEventAction(const G4Event *) { barEnergy_.fill(0.0); }
+void EventAction::BeginOfEventAction(const G4Event *event) {
+  eventId_ = event->GetEventID();
+  barEnergy_.fill(0.0);
+  pmtPhotons_.fill(0);
+  firstPmtTimeNs_.fill(std::numeric_limits<double>::quiet_NaN());
+}
 
 void EventAction::AddBarEnergy(int bar, double energy) {
   if (bar >= 1 && bar <= static_cast<int>(barEnergy_.size())) {
     barEnergy_[bar - 1] += energy;
   }
+}
+
+void EventAction::AddPmtPhoton(int channel, double time, double energy) {
+  if (channel < 1 || channel > static_cast<int>(pmtPhotons_.size())) return;
+  const int index = channel - 1;
+  const double timeNs = time / ns;
+  if (pmtPhotons_[index] == 0 || timeNs < firstPmtTimeNs_[index]) {
+    firstPmtTimeNs_[index] = timeNs;
+  }
+  ++pmtPhotons_[index];
+  auto* analysis = G4AnalysisManager::Instance();
+  analysis->FillNtupleIColumn(1, 0, eventId_);
+  analysis->FillNtupleIColumn(1, 1, channel);
+  analysis->FillNtupleDColumn(1, 2, timeNs);
+  analysis->FillNtupleDColumn(1, 3, energy / eV);
+  analysis->AddNtupleRow(1);
 }
 
 void EventAction::EndOfEventAction(const G4Event *event) {
@@ -76,13 +97,6 @@ void EventAction::EndOfEventAction(const G4Event *event) {
     }
   }
 
-  for (int bar = 0; bar < static_cast<int>(barEnergy_.size()); ++bar) {
-    // NOTE: Maybe we shoudl at some point in time simulate optical transport
-    // (instead of justing registring MeV)
-    pmtEnergy_[2 * bar] = barEnergy_[bar] / MeV;
-    pmtEnergy_[2 * bar + 1] = barEnergy_[bar] / MeV;
-  }
-
   auto* analysis = G4AnalysisManager::Instance();
   analysis->FillNtupleIColumn(0, eventId_);
   analysis->FillNtupleIColumn(1, sourceMode_);
@@ -93,8 +107,12 @@ void EventAction::EndOfEventAction(const G4Event *event) {
     analysis->FillNtupleDColumn(6 + 2 * axis, positronMomentumMeV_[axis]);
     analysis->FillNtupleDColumn(7 + 2 * axis, electronMomentumMeV_[axis]);
   }
+  for (int bar = 0; bar < 16; ++bar) {
+    analysis->FillNtupleDColumn(12 + bar, barEnergy_[bar] / MeV);
+  }
   for (int channel = 0; channel < 32; ++channel) {
-    analysis->FillNtupleDColumn(12 + channel, pmtEnergy_[channel]);
+    analysis->FillNtupleIColumn(28 + 2 * channel, pmtPhotons_[channel]);
+    analysis->FillNtupleDColumn(29 + 2 * channel, firstPmtTimeNs_[channel]);
   }
   analysis->AddNtupleRow();
   const auto completed = completedEvents.fetch_add(1, std::memory_order_relaxed) + 1;

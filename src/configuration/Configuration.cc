@@ -70,7 +70,19 @@ SimulationConfig LoadConfiguration() {
         Required<std::string>(document, "source.gun_particle"),
         Required<double>(document, "source.gun_energy_mev"),
         Vector(document, "source.gun_position_cm"),
-        Vector(document, "source.gun_direction")
+        Vector(document, "source.gun_direction"),
+        {
+            Required<double>(document, "optics.emission_min_ev"),
+            Required<double>(document, "optics.emission_max_ev"),
+            Required<double>(document, "optics.scintillation_yield_per_mev"),
+            Required<double>(document, "optics.resolution_scale"),
+            Required<double>(document, "optics.scintillation_decay_ns"),
+            Required<double>(document, "optics.scintillator_refractive_index"),
+            Required<double>(document, "optics.scintillator_absorption_length_cm"),
+            Required<double>(document, "optics.air_refractive_index"),
+            Required<double>(document, "optics.glass_refractive_index"),
+            Required<double>(document, "optics.pmt_quantum_efficiency")
+        }
     };
     if (config.mode != "batch" && config.mode != "visualization") {
         throw std::runtime_error("runtime.mode must be batch or visualization");
@@ -95,6 +107,22 @@ SimulationConfig LoadConfiguration() {
     const auto& direction = config.gunDirection;
     if (direction[0] == 0 && direction[1] == 0 && direction[2] == 0) {
         throw std::runtime_error("source.gun_direction must be nonzero");
+    }
+    const auto& optics = config.optics;
+    if (!std::isfinite(optics.emissionMinEv) || !std::isfinite(optics.emissionMaxEv) ||
+        !std::isfinite(optics.yieldPerMeV) || !std::isfinite(optics.resolutionScale) ||
+        !std::isfinite(optics.decayTimeNs) ||
+        !std::isfinite(optics.scintillatorIndex) ||
+        !std::isfinite(optics.scintillatorAbsorptionCm) ||
+        !std::isfinite(optics.airIndex) || !std::isfinite(optics.glassIndex) ||
+        !std::isfinite(optics.quantumEfficiency) ||
+        optics.emissionMinEv <= 0 || optics.emissionMaxEv <= optics.emissionMinEv ||
+        optics.yieldPerMeV <= 0 || optics.resolutionScale <= 0 ||
+        optics.decayTimeNs <= 0 ||
+        optics.scintillatorIndex <= 0 || optics.scintillatorAbsorptionCm <= 0 ||
+        optics.airIndex <= 0 || optics.glassIndex <= 0 ||
+        optics.quantumEfficiency <= 0 || optics.quantumEfficiency > 1) {
+        throw std::runtime_error("Invalid [optics] values");
     }
     return config;
 }

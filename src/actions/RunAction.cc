@@ -11,7 +11,7 @@ RunAction::RunAction(std::string outputFile)
     auto* analysis = G4AnalysisManager::Instance();
     analysis->SetNtupleMerging(true);
     analysis->SetNtupleRowWise(false, true);
-    analysis->CreateNtuple("events", "PMT energy-deposit proxy and pair truth");
+    analysis->CreateNtuple("events", "Scintillator energy, PMT photons, and pair truth");
     analysis->CreateNtupleIColumn("event_id");
     analysis->CreateNtupleIColumn("source_mode");
     analysis->CreateNtupleDColumn("pair_mass_MeV");
@@ -24,13 +24,26 @@ RunAction::RunAction(std::string outputFile)
         analysis->CreateNtupleDColumn(std::string("electron_p") + coordinate + "_MeV");
     }
     for (int scintillator = 1; scintillator <= 16; ++scintillator) {
+        std::ostringstream name;
+        name << "scint_" << std::setw(2) << std::setfill('0') << scintillator
+             << "_edep_MeV";
+        analysis->CreateNtupleDColumn(name.str());
+    }
+    for (int scintillator = 1; scintillator <= 16; ++scintillator) {
         for (const char* end : {"D", "U"}) {
             std::ostringstream name;
             name << "pmt_" << std::setw(2) << std::setfill('0') << scintillator
-                 << '_' << end << "_edep_MeV";
-            analysis->CreateNtupleDColumn(name.str());
+                 << '_' << end;
+            analysis->CreateNtupleIColumn(name.str() + "_photons");
+            analysis->CreateNtupleDColumn(name.str() + "_first_time_ns");
         }
     }
+    analysis->FinishNtuple();
+    analysis->CreateNtuple("photon_hits", "Detected optical photon arrival times");
+    analysis->CreateNtupleIColumn("event_id");
+    analysis->CreateNtupleIColumn("channel");
+    analysis->CreateNtupleDColumn("time_ns");
+    analysis->CreateNtupleDColumn("energy_eV");
     analysis->FinishNtuple();
 }
 
