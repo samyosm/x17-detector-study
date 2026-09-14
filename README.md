@@ -1,9 +1,9 @@
 # X17 detector study
 
-Minimal multithreaded Geant4 study with GDML geometry based on [*Status of the X17 search in Montreal*](X17_Montreal.pdf), section 2.
+## Setup and run
 
 ```sh
-mamba env create -f environment.yml  # first time only
+mamba env create -f environment.yml
 mamba activate x17-detector-study
 python scripts/generate_geometry.py
 cmake -S . -B build -DCMAKE_PREFIX_PATH="$CONDA_PREFIX"
@@ -11,18 +11,38 @@ cmake --build build -j
 ./build/simulate_detection
 ```
 
-Edit [config/configuration.toml](config/configuration.toml) before running. Every runtime and source setting is required; a missing or invalid value stops the program. The executable accepts no arguments. Set `runtime.mode` to `batch` or `visualization`. Batch mode runs `runtime.events` events; `runtime.progress_interval` prints the cumulative number of completed events across workers at each interval. Visualization mode executes `runtime.visualization_macro` and opens the interactive Geant4 viewer. The input GDML and visualization macro paths are relative to the TOML file. The ROOT output path is relative to the directory where the executable is launched. The output file is replaced on each run.
+Edit `config/configuration.toml` to set the source, run mode, and output file before running. Run commands from the repository root.
 
-The `source` table selects `gun`, `ipc`, `x17`, or `mixed`. Gun particle, energy, position, and direction are explicit there. Pair modes inject e⁺, e⁻, and a recoiling ⁸Be nucleus at the center of the ⁷LiF coating. Set the transition energy and X17 mass in the same table. The X17 mode samples a fixed-mass two-body intermediate; the IPC mode uses a simplified virtual-photon mass spectrum and isotropic pair decay. In `mixed` mode, `source.x17_fraction` is the probability that each event uses X17; the remaining events use IPC. Set it strictly between 0 and 1. This fraction is a chosen mixture for simulation, **not a predicted physical branching ratio**. These are acceptance templates, **not validated X17 or IPC predictions**. They omit nuclear multipole amplitudes, M1/E1 interference, polarization, beam recoil, resonance line shape, and absolute branching rates.
+## Detector
 
-Each worker selects one `PrimarySource` at startup. `GunSource`, `IpcSource`, and `X17Source` own mode-specific behavior; `MixedSource` chooses between the IPC and X17 implementations for each event. `PairSource` shares the recoil and lepton-decay kinematics. `PrimaryGeneratorAction` only delegates event generation.
+![Whole detector](docs/figures/whole.png)
 
-The C++ code is grouped by responsibility under `src/`: `source/` contains primary generation, `actions/` contains Geant4 run/event/step hooks and ROOT readout, `detector/` loads GDML, and `configuration/` reads TOML. Each header sits beside its implementation. `app/main.cc` wires these pieces together; `config/`, `geometry/`, and `scripts/` hold the editable settings, generated GDML, and geometry generator.
+![Beam-axis view](docs/figures/beam_axis.png)
 
-The `geometry` table supplies dimensions used by `scripts/generate_geometry.py`. Run that script again after changing geometry settings. The detector has a 36 cm MWPC with a 6 cm inner radius, surrounded by 16 scintillator bars of length 140 cm at a 16 cm inner radius. Each bar has one PMT at each end, for 32 channels. **D is at −z and U at +z.** The beamline and scintillator bars run along z: protons enter from −z and strike a ⁷LiF coating on a 45° aluminum foil near the barrel center. The cooling rod supports the target radially; it is not a beamline axis. The ⁷Li(p,γ)⁸Be reaction produces the excited beryllium state of interest; the target is lithium, not beryllium. The standard physics list does **not** implement that resonant production or an X17 particle. The current bar tangential width is a placeholder, so this GDML should not be assumed to reproduce the paper's 95% of 4π active coverage.
+![Target](docs/figures/target.png)
 
-The scintillator radial thickness is 100 mm and the MWPC wall is 1.0 mm Rohacell, as supplied for this study. The paper omits the bar tangential width, PMT body dimensions, and most target-region dimensions. These values are labeled as placeholders in the TOML file. The 0.8 mm carbon-fiber beamline wall and 45° target angle come from the paper. Carbon-fiber composition, Rohacell composition/density, and cooling-rod material are approximations. Confirm placeholder dimensions before using material effects for physics results. The beamline outside the target region, coolant circuit, and MWPC wire/strip detail are not modeled.
+## Results
 
-Geant4 optical physics now generates scintillation photons in the plastic bars and transports them with configured refractive indices and bulk absorption. A photon entering the circular PMT face coupled to a bar is accepted with the wavelength-independent `optics.pmt_quantum_efficiency`, then stopped. The `[optics]` emission band, yield, decay time, attenuation length, refractive indices, and efficiency are starter assumptions, **not measured detector properties**. There is no reflective wrapping, optical grease, wavelength-dependent photocathode response, gain, electronics, or pulse shaping. Optical tracking is substantially slower than energy-deposit scoring; reduce `runtime.events` for exploratory runs before attempting the currently configured large sample.
+## License
 
-The ROOT file contains an `events` TTree with `event_id`, `source_mode` (`0` gun, `1` IPC, `2` X17), pair truth, `scint_01_edep_MeV` through `scint_16_edep_MeV`, and separate photon counts and earliest detected arrival times for all 32 ends (`pmt_01_D_photons`, `pmt_01_D_first_time_ns`, ..., `pmt_16_U_photons`, `pmt_16_U_first_time_ns`). A time is NaN when its channel has no detected photon. The `photon_hits` TTree keeps every detected arrival as `event_id`, `channel` (odd = D, even = U), `time_ns`, and `energy_eV`; times are relative to the event start. In a mixed run, `source_mode` records the component actually used (`1` or `2`). Pair-truth branches are NaN in gun mode. Worker threads merge both trees, so row order is not guaranteed; use `event_id` to associate hits with events. The old duplicated `pmt_*_edep_MeV` proxy branches have been removed.
+MIT License
+
+Copyright (c) 2026 Samy Rahmani
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

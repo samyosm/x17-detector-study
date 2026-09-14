@@ -1,0 +1,22 @@
+# Shared figure style. Run from the repository root.
+# Use the actual OpenGL Qt driver; Geant4 11.4 may map "OGL" to ToolsSG.
+/vis/open OGLSQt
+/vis/viewer/set/background 1 1 1
+/vis/viewer/set/style surface
+/vis/geometry/set/visibility Scintillator 0 true
+/vis/geometry/set/visibility PMT 0 true
+/vis/geometry/set/visibility MWPCWall 0 true
+/vis/geometry/set/visibility BeamlineWall 0 true
+/vis/geometry/set/visibility Lithium7FluorideTarget 0 true
+/vis/geometry/set/visibility AlBacking 0 true
+/vis/geometry/set/visibility CoolingRod 0 true
+/vis/geometry/set/visibility World 0 false
+/vis/geometry/set/visibility MWPCGas 0 false
+/vis/geometry/set/visibility BeamlineVacuum 0 false
+/vis/geometry/set/colour Scintillator 0 0.12 0.47 0.78 1
+/vis/geometry/set/colour PMT 0 0.95 0.66 0.16 1
+/vis/geometry/set/colour MWPCWall 0 0.35 0.54 0.62 0.30
+/vis/geometry/set/colour BeamlineWall 0 0.75 0.26 0.20 0.35
+/vis/geometry/set/colour Lithium7FluorideTarget 0 0.16 0.69 0.36 1
+/vis/geometry/set/colour AlBacking 0 0.64 0.65 0.66 1
+/vis/geometry/set/colour CoolingRod 0 0.82 0.39 0.16 1

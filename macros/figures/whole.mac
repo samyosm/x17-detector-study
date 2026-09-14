@@ -1,0 +1,7 @@
+# Entire barrel, including all 16 bars and 32 PMTs.
+/control/execute macros/figures/style.mac
+/vis/drawVolume
+/vis/viewer/set/viewpointVector 1 1 0.7
+/vis/viewer/set/upVector 0 0 1
+/vis/viewer/zoomTo 1
+/vis/viewer/flush

@@ -1,0 +1,8 @@
+# x=0 section through the z-axis; the z direction points up in the image.
+/control/execute macros/figures/style.mac
+/vis/drawVolume
+/vis/viewer/set/sectionPlane on 0 0 0 cm 1 0 0
+/vis/viewer/set/viewpointVector 1 0 0
+/vis/viewer/set/upVector 0 0 1
+/vis/viewer/zoomTo 1
+/vis/viewer/flush

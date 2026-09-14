@@ -1,11 +1,11 @@
 [runtime]
-mode = "batch"                            # batch or visualization
+mode = "batch"                                       # batch or visualization
 threads = 20
 geometry_file = "../geometry/world.gdml"
-events = 300_000
+events = 100_000
 progress_interval = 1000
-visualization_macro = "../macros/vis.mac"
-output_file = "data/mixed_readout.root"
+visualization_macro = "../macros/figures/whole.mac"
+output_file = "data/14september2026_100k_mixed.root"
 
 [source]
 mode = "mixed"                    # gun, ipc, x17, or mixed

@@ -1,0 +1,8 @@
+# Foil and cooling rod at true scale, without the distant scintillator ring.
+/control/execute macros/figures/style.mac
+/vis/drawVolume BeamlineVacuum
+/vis/viewer/set/targetPoint 0 0 0 cm
+/vis/viewer/set/viewpointVector 1 0.8 0.6
+/vis/viewer/set/upVector 0 0 1
+/vis/viewer/zoomTo 9
+/vis/viewer/flush
