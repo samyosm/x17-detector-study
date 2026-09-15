@@ -29,7 +29,7 @@ def _(np, plt, uproot):
         pair_mass_MeV = data["pair_mass_MeV"]
 
         valid_mask = ~np.isnan(opening_angle_deg)
-    
+
         angles = opening_angle_deg[valid_mask]
         masses = pair_mass_MeV[valid_mask]
         modes = source_mode[valid_mask]
@@ -74,7 +74,7 @@ def _(plot):
 
 @app.cell
 def _(plot):
-    DATA_PATH_MIXED = "./data/mixed_readout.root"
+    DATA_PATH_MIXED = "./data/14september2026_100k_mixed.root"
     plot("Mixed", DATA_PATH_MIXED)
     return
 

@@ -23,5 +23,6 @@ Edit `config/configuration.toml` to set the source, run mode, and output file be
 
 ## Results
 
-... Coming
+![Truth values](docs/figures/14september2026_100k.png)
+
 

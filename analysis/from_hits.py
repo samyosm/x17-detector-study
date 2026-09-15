@@ -14,7 +14,7 @@ def _():
     import altair as alt
 
     ROOT.EnableImplicitMT()
-    DATA_PATH = "./data/mixed_readout.root"
+    DATA_PATH = "./data/14september2026_100k_mixed.root"
     return DATA_PATH, ROOT, alt, linregress, mo, np, pd
 
 
