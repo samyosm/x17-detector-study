@@ -19,10 +19,8 @@ Edit `config/configuration.toml` to set the source, run mode, and output file be
 
 ![Beam-axis view](docs/figures/beam_axis.png)
 
-![Target](docs/figures/target.png)
-
 ## Results
 
-![Truth values](docs/figures/14september2026_100k.png)
+![Truth values](docs/figures/14september2026_100k_mixed.png)
 
 
