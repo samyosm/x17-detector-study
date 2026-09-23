@@ -14,9 +14,15 @@ def _():
     from scipy.stats import linregress
 
     ROOT.EnableImplicitMT()
-    DATA_PATH = "./data/14september2026_100k_mixed.root"
-    BAR_COUNT = 16
-    SCINTILLATOR_RADIUS_CM = 21.0
+    import tomllib
+    from pathlib import Path
+
+    with (Path(__file__).resolve().parents[1] / "config/configuration.toml").open("rb") as _stream:
+        _config = tomllib.load(_stream)
+    DATA_PATH = str(Path(__file__).resolve().parents[1] / _config["runtime"]["output_file"])
+    BAR_COUNT = _config["geometry"]["scintillator_count"]
+    SCINTILLATOR_RADIUS_CM = (_config["geometry"]["scintillator_inner_radius_cm"]
+                              + _config["geometry"]["scintillator_radial_thickness_cm"] / 2)
     FIDUCIAL_HALF_LENGTH_CM = 55.0
     return (
         BAR_COUNT,
@@ -36,6 +42,8 @@ def _():
 def _(mo):
     mo.md(r"""
     # Detector position reconstruction
+
+    The optical extension uses virtual sensors at the bar ends (D at negative z, U at positive z). These are photon counts, not the reference team's energy-based end signals. PVC side boundaries absorb photons; there is no measured reflective wrapping model.
 
     This notebook reconstructs the longitudinal hit position using light attenuation and photon timing. Simulated track momentum provides the reference position used to calibrate and evaluate both methods.
     """)
@@ -83,7 +91,7 @@ def _(BAR_COUNT, mo):
     min_photon_count = mo.ui.number(
         start=0,
         step=1,
-        value=100,
+        value=0,
         debounce=True,
         label="Minimum photons at each end",
     )
@@ -109,14 +117,14 @@ def _(mo):
     mo.md(r"""
     ## Reference position
 
-    Each generated electron and positron is projected in a straight line from the target to the scintillator mid-radius $R=21$ cm. For momentum $(p_x,p_y,p_z)$,
+    Each generated electron and positron is projected in a straight line from the source origin to the scintillator mid-radius $R=20.75$ cm. For momentum $(p_x,p_y,p_z)$,
 
     $$z_{\rm truth}=R\frac{p_z}{\sqrt{p_x^2+p_y^2}}, \qquad
     \phi=\operatorname{atan2}(p_y,p_x).$$
 
     With $\Delta\phi=2\pi/16$, the nearest bar is
 
-    $$k=1+\operatorname{round}\left(\frac{\phi\bmod2\pi}{\Delta\phi}\right)\bmod16.$$
+    $$k=1+\operatorname{round}\left(\frac{(3\pi/2-\phi)\bmod2\pi}{\Delta\phi}\right)\bmod16.$$
 
     The mid-radius is used because the PMT reconstruction represents one position along a bar rather than the entry or exit surface. The resulting $(k,z_{\rm truth})$ is the reference used for calibration and evaluation.
     """)
@@ -139,7 +147,7 @@ def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, np, pd, readout):
 
             tracks.append(pd.DataFrame({
                 "event_id": data["event_id"],
-                "bar": np.mod(np.round(azimuth / angle_step).astype(int), bar_count) + 1,
+                "bar": np.mod(np.round(np.mod(1.5 * np.pi - azimuth, 2 * np.pi) / angle_step).astype(int), bar_count) + 1,
                 "z_truth": radius * pz / safe_momentum,
             }))
 
@@ -415,7 +423,7 @@ def _(mo):
     mo.md(r"""
     ## Opening angle from attenuation positions
 
-    Two distinct reconstructed event-bars are paired by event. The centre of bar $k$ is at $\phi_k=2\pi(k-1)/16$. Combining its transverse centre with the reconstructed z gives
+    Two distinct reconstructed event-bars are paired by event. The centre of bar $k$ is at $\phi_k=3\pi/2-2\pi(k-1)/16$. Combining its transverse centre with the reconstructed z gives
 
     $$\vec r=(R\cos\phi_k,R\sin\phi_k,z_{\rm attenuation}).$$
 
@@ -447,7 +455,7 @@ def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, attenuation_reconstructed_df, np, pd, r
         complete = positions[
             positions.groupby("event_id")["event_id"].transform("size") == 2
         ].sort_values(["event_id", "bar"])
-        phi = (complete["bar"].to_numpy() - 1) * 2.0 * np.pi / bar_count
+        phi = 1.5 * np.pi - (complete["bar"].to_numpy() - 1) * 2.0 * np.pi / bar_count
         directions = np.column_stack([
             radius * np.cos(phi),
             radius * np.sin(phi),
@@ -631,7 +639,7 @@ def _(prepare_timing, summarize_positions, timing_fits_df, validation_df):
         timing_reconstructed_df,
         "timing_residual",
     )
-    return timing_fits_df, timing_reconstructed_df, timing_summary_df
+    return timing_reconstructed_df, timing_summary_df
 
 
 @app.cell
@@ -672,7 +680,7 @@ def _(mo):
     mo.md(r"""
     ## Opening angle from timing positions
 
-    Two distinct timing-reconstructed event-bars are paired by event. For bar $k$, $\phi_k=2\pi(k-1)/16$, so its direction is constructed from
+    Two distinct timing-reconstructed event-bars are paired by event. For bar $k$, $\phi_k=3\pi/2-2\pi(k-1)/16$, so its direction is constructed from
 
     $$\vec r=(R\cos\phi_k,R\sin\phi_k,z_{\rm timing}),\qquad
     \hat r=\frac{\vec r}{|\vec r|}.$$
@@ -744,7 +752,7 @@ def _(mo):
 
     The method with the smaller RMSE is preferred because it produces the smaller quadratic position error on this sample. RMSE is computed once across all paired measurements and once within each bar. The residual plot uses common 2 cm bins spanning both complete residual ranges, so the two distributions are directly comparable without discarding outliers.
 
-    The calibration and evaluation use the same events, making this an in-sample comparison. A paper-quality performance estimate should fit the calibration constants on one event sample and report RMSE on an independent sample.
+    Both methods use the same held-out validation events; calibration events are separate.
     """)
     return
 

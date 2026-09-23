@@ -16,9 +16,13 @@
 #include <iostream>
 #include <memory>
 
-int main() {
+int main(int argc, char** argv) {
     try {
-        const auto config = LoadConfiguration();
+        if (argc != 1 && (argc != 3 || std::string(argv[1]) != "--config")) {
+            std::cerr << "Usage: simulate_detection [--config path]\n";
+            return 1;
+        }
+        const auto config = LoadConfiguration(argc == 3 ? argv[2] : CONFIG_PATH);
         const auto& position = config.gunPositionCm;
         const auto& direction = config.gunDirection;
         auto source = std::make_shared<SourceSettings>(SourceSettings{

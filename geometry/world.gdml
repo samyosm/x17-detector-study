@@ -2,383 +2,725 @@
 <gdml>
   <define />
   <materials>
-    <element name="Nitrogen" formula="N" Z="7">
-      <atom value="14.0067" />
-    </element>
-    <element name="Oxygen" formula="O" Z="8">
-      <atom value="15.999" />
-    </element>
     <element name="Carbon" formula="C" Z="6">
-      <atom value="12.011" />
-    </element>
-    <element name="Argon" formula="Ar" Z="18">
-      <atom value="39.948" />
+      <atom value="12.01" />
     </element>
     <element name="Hydrogen" formula="H" Z="1">
-      <atom value="1.008" />
+      <atom value="1.01" />
     </element>
-    <element name="Silicon" formula="Si" Z="14">
-      <atom value="28.085" />
+    <element name="Nitrogen" formula="N" Z="7">
+      <atom value="14.006855" />
     </element>
-    <element name="Fluorine" formula="F" Z="9">
-      <atom value="18.998403" />
+    <element name="Oxygen" formula="O" Z="8">
+      <atom value="15.9994" />
     </element>
-    <element name="Aluminum" formula="Al" Z="13">
-      <atom value="26.981538" />
+    <element name="Argon" formula="Ar" Z="18">
+      <atom value="39.95" />
     </element>
-    <element name="Copper" formula="Cu" Z="29">
-      <atom value="63.546" />
-    </element>
-    <isotope name="Lithium7Isotope" Z="3" N="7">
-      <atom value="7.016004" />
-    </isotope>
-    <element name="Lithium7" formula="Li">
-      <fraction n="1.0" ref="Lithium7Isotope" />
-    </element>
-    <material name="Air" state="gas">
-      <D value="0.001225" unit="g/cm3" />
-      <fraction n="0.7" ref="Nitrogen" />
-      <fraction n="0.3" ref="Oxygen" />
-    </material>
-    <material name="MWPCGas" state="gas">
-      <D value="0.001834" unit="g/cm3" />
-      <fraction n="0.720944809" ref="Argon" />
-      <fraction n="0.076160147" ref="Carbon" />
-      <fraction n="0.202895044" ref="Oxygen" />
-    </material>
-    <material name="PlasticScintillator">
-      <D value="1.032" unit="g/cm3" />
-      <fraction n="0.915" ref="Carbon" />
-      <fraction n="0.085" ref="Hydrogen" />
-    </material>
-    <material name="Rohacell">
-      <D value="0.052" unit="g/cm3" />
-      <fraction n="0.6273" ref="Carbon" />
-      <fraction n="0.0724" ref="Hydrogen" />
-      <fraction n="0.0914" ref="Nitrogen" />
-      <fraction n="0.2089" ref="Oxygen" />
-    </material>
-    <material name="Glass">
-      <D value="2.5" unit="g/cm3" />
-      <fraction n="0.467" ref="Silicon" />
-      <fraction n="0.533" ref="Oxygen" />
-    </material>
-    <material name="Vacuum" state="gas">
+    <material name="Galactic" state="gas">
       <D value="1e-25" unit="g/cm3" />
       <fraction n="1.0" ref="Hydrogen" />
+      <T value="2.73" unit="K" />
+      <P value="3e-18" unit="pascal" />
     </material>
-    <material name="CarbonFiber">
-      <D value="1.6" unit="g/cm3" />
-      <fraction n="1.0" ref="Carbon" />
+    <material name="PLA">
+      <D value="1.24" unit="g/cm3" />
+      <composite n="3" ref="Carbon" />
+      <composite n="4" ref="Hydrogen" />
+      <composite n="2" ref="Oxygen" />
     </material>
-    <material name="AlFoil">
-      <D value="2.7" unit="g/cm3" />
-      <fraction n="1.0" ref="Aluminum" />
+    <material name="fDCgas">
+      <D value="0.0017" unit="g/cm3" />
+      <fraction n="0.8" ref="Argon" />
+      <fraction n="0.2" ref="G4_CARBON_DIOXIDE" />
     </material>
-    <material name="CoolingCopper">
-      <D value="8.96" unit="g/cm3" />
-      <fraction n="1.0" ref="Copper" />
-    </material>
-    <material name="Lithium7Fluoride">
-      <D value="2.64" unit="g/cm3" />
-      <fraction n="0.2696968645104999" ref="Lithium7" />
-      <fraction n="0.7303031354895001" ref="Fluorine" />
+    <material name="Rohacell">
+      <D value="0.1" unit="g/cm3" />
+      <fraction n="0.0839" ref="Nitrogen" />
+      <fraction n="0.1914" ref="Oxygen" />
+      <fraction n="0.6464" ref="Carbon" />
+      <fraction n="0.0784" ref="Hydrogen" />
     </material>
   </materials>
   <solids>
-    <box name="WorldBox" x="200" y="200" z="200" lunit="cm" />
-    <box name="ScintillatorBar" x="10.0" y="5.5" z="140.0" lunit="cm" />
-    <tube name="MWPCGasCylinder" rmin="0" rmax="6.0" z="36.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="BeamlineClearance" rmin="0" rmax="2.501" z="30.2" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="BeamlineVacuumCylinder" rmin="0" rmax="2.42" z="30.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="BeamlineCarbonShell" rmin="2.42" rmax="2.5" z="30.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="AlBackingDisk" rmin="0" rmax="1.0" z="0.002" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="Lithium7FluorideDisk" rmin="0" rmax="1.0" z="0.0001" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="CoolingRodCylinder" rmin="0" rmax="0.05" z="1.32" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <tube name="MWPCWallCylinder" rmin="6.0" rmax="6.1" z="36.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
-    <subtraction name="MWPCGasWithBeamPort">
-      <first ref="MWPCGasCylinder" />
-      <second ref="BeamlineClearance" />
-    </subtraction>
-    <tube name="PMTCylinder" rmin="0" rmax="2.5" z="10.0" startphi="0" deltaphi="360" aunit="deg" lunit="cm" />
+    <tube name="MWPCGasSolid" rmin="6.0" rmax="6.8" z="36.0" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="MWPCInnerWallSolid" rmin="6.0" rmax="6.1" z="36.0" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="MWPCOuterWallSolid" rmin="6.7" rmax="6.8" z="36.0" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="BeamlineWallSolid" rmin="2.995" rmax="3.085" z="25.0" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="BeamlineVacuumSolid" rmin="0" rmax="2.99" z="25.0" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="LithiumFluorideTargetSolid" rmin="0" rmax="0.15875" z="0.00019" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <tube name="CoolingRodSolid" rmin="0.05" rmax="0.15" z="10.133" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <box name="BrassNutSolid" x="0.635" y="0.254" z="0.635" lunit="cm" />
+    <tube name="FlangeSolid" rmin="2.29" rmax="4.76" z="2.54" startphi="0" deltaphi="6.283185307179586" aunit="rad" lunit="cm" />
+    <polyhedra name="ScintillatorWrapSolid" startphi="0.19634954084936207" deltaphi="6.4795348480289485" numsides="16" aunit="rad" lunit="cm">
+      <zplane rmin="15.98" rmax="25.52" z="-0.02" />
+      <zplane rmin="15.98" rmax="25.52" z="140.02" />
+    </polyhedra>
+    <trd name="ScintillatorSolid" lunit="cm" x1="10.104530736362559" x2="6.325195756149056" y1="140.0" y2="140.0" z="9.5" />
+    <box name="WorldSolid" x="250.0" y="250.0" z="250.0" lunit="cm" />
+    <box name="DeltaEHousing_00Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_00Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_00Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_01Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_01Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_01Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_02Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_02Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_02Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_03Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_03Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_03Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_04Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_04Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_04Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_05Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_05Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_05Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_06Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_06Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_06Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_07Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_07Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_07Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_08Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_08Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_08Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_09Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_09Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_09Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_10Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_10Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_10Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_11Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_11Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_11Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_12Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_12Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_12Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_13Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_13Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_13Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_14Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_14Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_14Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
+    <box name="DeltaEHousing_15Solid" x="3.175" y="4.445" z="20.32" lunit="cm" />
+    <box name="DeltaECavity_15Solid" x="3.135" y="3.81" z="10.32" lunit="cm" />
+    <box name="DeltaEScintillator_15Solid" x="0.2" y="2.8" z="8.094" lunit="cm" />
   </solids>
   <structure>
-    <volume name="MWPCGas">
-      <materialref ref="MWPCGas" />
-      <solidref ref="MWPCGasWithBeamPort" />
-    </volume>
-    <volume name="MWPCWall">
+    <volume name="MWPCInnerWall">
       <materialref ref="Rohacell" />
-      <solidref ref="MWPCWallCylinder" />
+      <solidref ref="MWPCInnerWallSolid" />
+    </volume>
+    <volume name="MWPCOuterWall">
+      <materialref ref="Rohacell" />
+      <solidref ref="MWPCOuterWallSolid" />
+    </volume>
+    <volume name="MWPCGas">
+      <materialref ref="fDCgas" />
+      <solidref ref="MWPCGasSolid" />
+      <physvol name="MWPCInnerWall" copynumber="0">
+        <volumeref ref="MWPCInnerWall" />
+        <position name="MWPCInnerWallPosition" unit="cm" x="0" y="0" z="0" />
+        <rotation name="MWPCInnerWallRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="MWPCOuterWall" copynumber="0">
+        <volumeref ref="MWPCOuterWall" />
+        <position name="MWPCOuterWallPosition" unit="cm" x="0" y="0" z="0" />
+        <rotation name="MWPCOuterWallRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
     </volume>
     <volume name="BeamlineWall">
-      <materialref ref="CarbonFiber" />
-      <solidref ref="BeamlineCarbonShell" />
+      <materialref ref="G4_GRAPHITE" />
+      <solidref ref="BeamlineWallSolid" />
     </volume>
-    <volume name="AlBacking">
-      <materialref ref="AlFoil" />
-      <solidref ref="AlBackingDisk" />
-    </volume>
-    <volume name="Lithium7FluorideTarget">
-      <materialref ref="Lithium7Fluoride" />
-      <solidref ref="Lithium7FluorideDisk" />
+    <volume name="LithiumFluorideTarget">
+      <materialref ref="G4_LITHIUM_FLUORIDE" />
+      <solidref ref="LithiumFluorideTargetSolid" />
     </volume>
     <volume name="CoolingRod">
-      <materialref ref="CoolingCopper" />
-      <solidref ref="CoolingRodCylinder" />
+      <materialref ref="G4_Cu" />
+      <solidref ref="CoolingRodSolid" />
+    </volume>
+    <volume name="BrassNut">
+      <materialref ref="G4_BRASS" />
+      <solidref ref="BrassNutSolid" />
     </volume>
     <volume name="BeamlineVacuum">
-      <materialref ref="Vacuum" />
-      <solidref ref="BeamlineVacuumCylinder" />
-      <physvol name="Lithium7FluorideTarget" copynumber="0">
-        <volumeref ref="Lithium7FluorideTarget" />
-        <position name="Lithium7FluorideTarget_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-        <rotation name="Lithium7FluorideTarget_rotation" x="0.000000" y="-45.000000" z="0.000000" unit="deg" />
-      </physvol>
-      <physvol name="AlBacking" copynumber="0">
-        <volumeref ref="AlBacking" />
-        <position name="AlBacking_position" x="0.000743169" y="0.000000000" z="0.000743169" unit="cm" />
-        <rotation name="AlBacking_rotation" x="0.000000" y="-45.000000" z="0.000000" unit="deg" />
+      <materialref ref="Galactic" />
+      <solidref ref="BeamlineVacuumSolid" />
+      <physvol name="LithiumFluorideTarget" copynumber="0">
+        <volumeref ref="LithiumFluorideTarget" />
+        <position name="LithiumFluorideTargetPosition" unit="cm" x="0" y="0" z="-0.05" />
+        <rotation name="LithiumFluorideTargetRotation" unit="rad" x="0.7853981633974483" y="0" z="0" />
       </physvol>
       <physvol name="CoolingRod" copynumber="0">
         <volumeref ref="CoolingRod" />
-        <position name="CoolingRod_position" x="0.000000000" y="1.710000000" z="0.000000000" unit="cm" />
-        <rotation name="CoolingRod_rotation" x="90.000000" y="0.000000" z="0.000000" unit="deg" />
+        <position name="CoolingRodPosition" unit="cm" x="0" y="1.905" z="-6.25" />
+        <rotation name="CoolingRodRotation" unit="rad" x="0" y="0" z="0" />
       </physvol>
+      <physvol name="BrassNut" copynumber="0">
+        <volumeref ref="BrassNut" />
+        <position name="BrassNutPosition" unit="cm" x="0" y="1.6280000000000001" z="-1.501" />
+        <rotation name="BrassNutRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="Flange">
+      <materialref ref="G4_Al" />
+      <solidref ref="FlangeSolid" />
     </volume>
     <volume name="Scintillator">
-      <materialref ref="PlasticScintillator" />
-      <solidref ref="ScintillatorBar" />
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="ScintillatorSolid" />
     </volume>
-    <volume name="PMT">
-      <materialref ref="Glass" />
-      <solidref ref="PMTCylinder" />
-    </volume>
-    <volume name="World">
-      <materialref ref="Air" />
-      <solidref ref="WorldBox" />
-      <physvol name="MWPCGas" copynumber="0">
-        <volumeref ref="MWPCGas" />
-        <position name="MWPCGas_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-      </physvol>
-      <physvol name="MWPCWall" copynumber="0">
-        <volumeref ref="MWPCWall" />
-        <position name="MWPCWall_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-      </physvol>
-      <physvol name="BeamlineVacuum" copynumber="0">
-        <volumeref ref="BeamlineVacuum" />
-        <position name="BeamlineVacuum_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-      </physvol>
-      <physvol name="BeamlineWall" copynumber="0">
-        <volumeref ref="BeamlineWall" />
-        <position name="BeamlineWall_position" x="0.000000000" y="0.000000000" z="0.000000000" unit="cm" />
+    <volume name="ScintillatorWrap">
+      <materialref ref="G4_POLYVINYL_CHLORIDE" />
+      <solidref ref="ScintillatorWrapSolid" />
+      <physvol name="Scintillator_00" copynumber="0">
+        <volumeref ref="Scintillator" />
+        <position name="Scintillator_00Position" unit="cm" x="-0.0" y="-20.75" z="70.0" />
+        <rotation name="Scintillator_00Rotation" unit="rad" x="1.5708" y="-0.0" z="-0.0" />
       </physvol>
       <physvol name="Scintillator_01" copynumber="1">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_01_position" x="21.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_01_D" copynumber="1">
-        <volumeref ref="PMT" />
-        <position name="PMT_01_D_position" x="21.000000000" y="0.000000000" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_01_U" copynumber="2">
-        <volumeref ref="PMT" />
-        <position name="PMT_01_U_position" x="21.000000000" y="0.000000000" z="75.000000000" unit="cm" />
+        <position name="Scintillator_01Position" unit="cm" x="-7.940681221575613" y="-19.1705002996092" z="70.0" />
+        <rotation name="Scintillator_01Rotation" unit="rad" x="1.5708003026434505" y="-0.39269908169592976" z="-1.521491371183043e-06" />
       </physvol>
       <physvol name="Scintillator_02" copynumber="2">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_02_position" x="19.401470183" y="8.036352080" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_02_rotation" x="0.000000" y="0.000000" z="-22.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_02_D" copynumber="3">
-        <volumeref ref="PMT" />
-        <position name="PMT_02_D_position" x="19.401470183" y="8.036352080" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_02_U" copynumber="4">
-        <volumeref ref="PMT" />
-        <position name="PMT_02_U_position" x="19.401470183" y="8.036352080" z="75.000000000" unit="cm" />
+        <position name="Scintillator_02Position" unit="cm" x="-14.67246570962086" y="-14.672465709620862" z="70.0" />
+        <rotation name="Scintillator_02Rotation" unit="rad" x="1.570801521491371" y="-0.785398163390702" z="-3.6732051033300534e-06" />
       </physvol>
       <physvol name="Scintillator_03" copynumber="3">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_03_position" x="14.849242405" y="14.849242405" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_03_rotation" x="0.000000" y="0.000000" z="-45.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_03_D" copynumber="5">
-        <volumeref ref="PMT" />
-        <position name="PMT_03_D_position" x="14.849242405" y="14.849242405" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_03_U" copynumber="6">
-        <volumeref ref="PMT" />
-        <position name="PMT_03_U_position" x="14.849242405" y="14.849242405" z="75.000000000" unit="cm" />
+        <position name="Scintillator_03Position" unit="cm" x="-19.1705002996092" y="-7.940681221575614" z="70.0" />
+        <rotation name="Scintillator_03Rotation" unit="rad" x="1.5708059253423972" y="-1.1780972450798854" z="-8.867901577644908e-06" />
       </physvol>
       <physvol name="Scintillator_04" copynumber="4">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_04_position" x="8.036352080" y="19.401470183" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_04_rotation" x="0.000000" y="0.000000" z="-67.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_04_D" copynumber="7">
-        <volumeref ref="PMT" />
-        <position name="PMT_04_D_position" x="8.036352080" y="19.401470183" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_04_U" copynumber="8">
-        <volumeref ref="PMT" />
-        <position name="PMT_04_U_position" x="8.036352080" y="19.401470183" z="75.000000000" unit="cm" />
+        <position name="Scintillator_04Position" unit="cm" x="-20.75" y="-1.270571054115379e-15" z="70.0" />
+        <rotation name="Scintillator_04Rotation" unit="rad" x="3.1415926535731233" y="-1.5707926535755432" z="-1.5707963267782266" />
       </physvol>
       <physvol name="Scintillator_05" copynumber="5">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_05_position" x="0.000000000" y="21.000000000" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_05_rotation" x="0.000000" y="0.000000" z="-90.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_05_D" copynumber="9">
-        <volumeref ref="PMT" />
-        <position name="PMT_05_D_position" x="0.000000000" y="21.000000000" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_05_U" copynumber="10">
-        <volumeref ref="PMT" />
-        <position name="PMT_05_U_position" x="0.000000000" y="21.000000000" z="75.000000000" unit="cm" />
+        <position name="Scintillator_05Position" unit="cm" x="-19.1705002996092" y="7.940681221575612" z="70.0" />
+        <rotation name="Scintillator_05Rotation" unit="rad" x="-1.5708059253423972" y="-1.1780972450798854" z="-3.1415837856882156" />
       </physvol>
       <physvol name="Scintillator_06" copynumber="6">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_06_position" x="-8.036352080" y="19.401470183" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_06_rotation" x="0.000000" y="0.000000" z="-112.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_06_D" copynumber="11">
-        <volumeref ref="PMT" />
-        <position name="PMT_06_D_position" x="-8.036352080" y="19.401470183" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_06_U" copynumber="12">
-        <volumeref ref="PMT" />
-        <position name="PMT_06_U_position" x="-8.036352080" y="19.401470183" z="75.000000000" unit="cm" />
+        <position name="Scintillator_06Position" unit="cm" x="-14.672465709620862" y="14.67246570962086" z="70.0" />
+        <rotation name="Scintillator_06Rotation" unit="rad" x="-1.570801521491371" y="-0.7853981633907021" z="-3.14158898038469" />
       </physvol>
       <physvol name="Scintillator_07" copynumber="7">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_07_position" x="-14.849242405" y="14.849242405" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_07_rotation" x="0.000000" y="0.000000" z="-135.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_07_D" copynumber="13">
-        <volumeref ref="PMT" />
-        <position name="PMT_07_D_position" x="-14.849242405" y="14.849242405" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_07_U" copynumber="14">
-        <volumeref ref="PMT" />
-        <position name="PMT_07_U_position" x="-14.849242405" y="14.849242405" z="75.000000000" unit="cm" />
+        <position name="Scintillator_07Position" unit="cm" x="-7.940681221575615" y="19.1705002996092" z="70.0" />
+        <rotation name="Scintillator_07Rotation" unit="rad" x="-1.5708003026434505" y="-0.3926990816959299" z="-3.141591132098422" />
       </physvol>
       <physvol name="Scintillator_08" copynumber="8">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_08_position" x="-19.401470183" y="8.036352080" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_08_rotation" x="0.000000" y="0.000000" z="-157.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_08_D" copynumber="15">
-        <volumeref ref="PMT" />
-        <position name="PMT_08_D_position" x="-19.401470183" y="8.036352080" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_08_U" copynumber="16">
-        <volumeref ref="PMT" />
-        <position name="PMT_08_U_position" x="-19.401470183" y="8.036352080" z="75.000000000" unit="cm" />
+        <position name="Scintillator_08Position" unit="cm" x="-2.541142108230758e-15" y="20.75" z="70.0" />
+        <rotation name="Scintillator_08Rotation" unit="rad" x="-1.5708" y="-1.2246467991390914e-16" z="-3.141592653589793" />
       </physvol>
       <physvol name="Scintillator_09" copynumber="9">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_09_position" x="-21.000000000" y="0.000000000" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_09_rotation" x="0.000000" y="0.000000" z="-180.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_09_D" copynumber="17">
-        <volumeref ref="PMT" />
-        <position name="PMT_09_D_position" x="-21.000000000" y="0.000000000" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_09_U" copynumber="18">
-        <volumeref ref="PMT" />
-        <position name="PMT_09_U_position" x="-21.000000000" y="0.000000000" z="75.000000000" unit="cm" />
+        <position name="Scintillator_09Position" unit="cm" x="7.940681221575611" y="19.170500299609202" z="70.0" />
+        <rotation name="Scintillator_09Rotation" unit="rad" x="-1.5708003026434505" y="0.3926990816959296" z="3.141591132098422" />
       </physvol>
       <physvol name="Scintillator_10" copynumber="10">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_10_position" x="-19.401470183" y="-8.036352080" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_10_rotation" x="0.000000" y="0.000000" z="-202.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_10_D" copynumber="19">
-        <volumeref ref="PMT" />
-        <position name="PMT_10_D_position" x="-19.401470183" y="-8.036352080" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_10_U" copynumber="20">
-        <volumeref ref="PMT" />
-        <position name="PMT_10_U_position" x="-19.401470183" y="-8.036352080" z="75.000000000" unit="cm" />
+        <position name="Scintillator_10Position" unit="cm" x="14.67246570962086" y="14.672465709620864" z="70.0" />
+        <rotation name="Scintillator_10Rotation" unit="rad" x="-1.570801521491371" y="0.785398163390702" z="3.14158898038469" />
       </physvol>
       <physvol name="Scintillator_11" copynumber="11">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_11_position" x="-14.849242405" y="-14.849242405" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_11_rotation" x="0.000000" y="0.000000" z="-225.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_11_D" copynumber="21">
-        <volumeref ref="PMT" />
-        <position name="PMT_11_D_position" x="-14.849242405" y="-14.849242405" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_11_U" copynumber="22">
-        <volumeref ref="PMT" />
-        <position name="PMT_11_U_position" x="-14.849242405" y="-14.849242405" z="75.000000000" unit="cm" />
+        <position name="Scintillator_11Position" unit="cm" x="19.170500299609195" y="7.940681221575624" z="70.0" />
+        <rotation name="Scintillator_11Rotation" unit="rad" x="-1.5708059253423972" y="1.1780972450798848" z="3.1415837856882156" />
       </physvol>
       <physvol name="Scintillator_12" copynumber="12">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_12_position" x="-8.036352080" y="-19.401470183" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_12_rotation" x="0.000000" y="0.000000" z="-247.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_12_D" copynumber="23">
-        <volumeref ref="PMT" />
-        <position name="PMT_12_D_position" x="-8.036352080" y="-19.401470183" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_12_U" copynumber="24">
-        <volumeref ref="PMT" />
-        <position name="PMT_12_U_position" x="-8.036352080" y="-19.401470183" z="75.000000000" unit="cm" />
+        <position name="Scintillator_12Position" unit="cm" x="20.75" y="3.811713162346136e-15" z="70.0" />
+        <rotation name="Scintillator_12Rotation" unit="rad" x="-3.1415926535397833" y="1.5707926535755432" z="1.5707963268449066" />
       </physvol>
       <physvol name="Scintillator_13" copynumber="13">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_13_position" x="-0.000000000" y="-21.000000000" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_13_rotation" x="0.000000" y="0.000000" z="-270.000000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_13_D" copynumber="25">
-        <volumeref ref="PMT" />
-        <position name="PMT_13_D_position" x="-0.000000000" y="-21.000000000" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_13_U" copynumber="26">
-        <volumeref ref="PMT" />
-        <position name="PMT_13_U_position" x="-0.000000000" y="-21.000000000" z="75.000000000" unit="cm" />
+        <position name="Scintillator_13Position" unit="cm" x="19.1705002996092" y="-7.940681221575618" z="70.0" />
+        <rotation name="Scintillator_13Rotation" unit="rad" x="1.5708059253423972" y="1.178097245079885" z="8.867901577644902e-06" />
       </physvol>
       <physvol name="Scintillator_14" copynumber="14">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_14_position" x="8.036352080" y="-19.401470183" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_14_rotation" x="0.000000" y="0.000000" z="-292.500000" unit="deg" />
-      </physvol>
-      <physvol name="PMT_14_D" copynumber="27">
-        <volumeref ref="PMT" />
-        <position name="PMT_14_D_position" x="8.036352080" y="-19.401470183" z="-75.000000000" unit="cm" />
-      </physvol>
-      <physvol name="PMT_14_U" copynumber="28">
-        <volumeref ref="PMT" />
-        <position name="PMT_14_U_position" x="8.036352080" y="-19.401470183" z="75.000000000" unit="cm" />
+        <position name="Scintillator_14Position" unit="cm" x="14.672465709620864" y="-14.672465709620857" z="70.0" />
+        <rotation name="Scintillator_14Rotation" unit="rad" x="1.570801521491371" y="0.7853981633907023" z="3.6732051033300555e-06" />
       </physvol>
       <physvol name="Scintillator_15" copynumber="15">
         <volumeref ref="Scintillator" />
-        <position name="Scintillator_15_position" x="14.849242405" y="-14.849242405" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_15_rotation" x="0.000000" y="0.000000" z="-315.000000" unit="deg" />
+        <position name="Scintillator_15Position" unit="cm" x="7.940681221575626" y="-19.170500299609195" z="70.0" />
+        <rotation name="Scintillator_15Rotation" unit="rad" x="1.5708003026434505" y="0.3926990816959304" z="1.521491371183046e-06" />
       </physvol>
-      <physvol name="PMT_15_D" copynumber="29">
-        <volumeref ref="PMT" />
-        <position name="PMT_15_D_position" x="14.849242405" y="-14.849242405" z="-75.000000000" unit="cm" />
+    </volume>
+    <volume name="DeltaEScintillator_00">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_00Solid" />
+    </volume>
+    <volume name="DeltaECavity_00">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_00Solid" />
+      <physvol name="DeltaEScintillator_00" copynumber="0">
+        <volumeref ref="DeltaEScintillator_00" />
+        <position name="DeltaEScintillator_00Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_00Rotation" unit="rad" x="0" y="0" z="0" />
       </physvol>
-      <physvol name="PMT_15_U" copynumber="30">
-        <volumeref ref="PMT" />
-        <position name="PMT_15_U_position" x="14.849242405" y="-14.849242405" z="75.000000000" unit="cm" />
+    </volume>
+    <volume name="DeltaEHousing_00">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_00Solid" />
+      <physvol name="DeltaECavity_00" copynumber="0">
+        <volumeref ref="DeltaECavity_00" />
+        <position name="DeltaECavity_00Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_00Rotation" unit="rad" x="0" y="0" z="0" />
       </physvol>
-      <physvol name="Scintillator_16" copynumber="16">
-        <volumeref ref="Scintillator" />
-        <position name="Scintillator_16_position" x="19.401470183" y="-8.036352080" z="0.000000000" unit="cm" />
-        <rotation name="Scintillator_16_rotation" x="0.000000" y="0.000000" z="-337.500000" unit="deg" />
+    </volume>
+    <volume name="DeltaEScintillator_01">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_01Solid" />
+    </volume>
+    <volume name="DeltaECavity_01">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_01Solid" />
+      <physvol name="DeltaEScintillator_01" copynumber="1">
+        <volumeref ref="DeltaEScintillator_01" />
+        <position name="DeltaEScintillator_01Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_01Rotation" unit="rad" x="0" y="0" z="0" />
       </physvol>
-      <physvol name="PMT_16_D" copynumber="31">
-        <volumeref ref="PMT" />
-        <position name="PMT_16_D_position" x="19.401470183" y="-8.036352080" z="-75.000000000" unit="cm" />
+    </volume>
+    <volume name="DeltaEHousing_01">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_01Solid" />
+      <physvol name="DeltaECavity_01" copynumber="1">
+        <volumeref ref="DeltaECavity_01" />
+        <position name="DeltaECavity_01Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_01Rotation" unit="rad" x="0" y="0" z="0" />
       </physvol>
-      <physvol name="PMT_16_U" copynumber="32">
-        <volumeref ref="PMT" />
-        <position name="PMT_16_U_position" x="19.401470183" y="-8.036352080" z="75.000000000" unit="cm" />
+    </volume>
+    <volume name="DeltaEScintillator_02">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_02Solid" />
+    </volume>
+    <volume name="DeltaECavity_02">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_02Solid" />
+      <physvol name="DeltaEScintillator_02" copynumber="2">
+        <volumeref ref="DeltaEScintillator_02" />
+        <position name="DeltaEScintillator_02Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_02Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_02">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_02Solid" />
+      <physvol name="DeltaECavity_02" copynumber="2">
+        <volumeref ref="DeltaECavity_02" />
+        <position name="DeltaECavity_02Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_02Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_03">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_03Solid" />
+    </volume>
+    <volume name="DeltaECavity_03">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_03Solid" />
+      <physvol name="DeltaEScintillator_03" copynumber="3">
+        <volumeref ref="DeltaEScintillator_03" />
+        <position name="DeltaEScintillator_03Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_03Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_03">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_03Solid" />
+      <physvol name="DeltaECavity_03" copynumber="3">
+        <volumeref ref="DeltaECavity_03" />
+        <position name="DeltaECavity_03Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_03Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_04">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_04Solid" />
+    </volume>
+    <volume name="DeltaECavity_04">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_04Solid" />
+      <physvol name="DeltaEScintillator_04" copynumber="4">
+        <volumeref ref="DeltaEScintillator_04" />
+        <position name="DeltaEScintillator_04Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_04Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_04">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_04Solid" />
+      <physvol name="DeltaECavity_04" copynumber="4">
+        <volumeref ref="DeltaECavity_04" />
+        <position name="DeltaECavity_04Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_04Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_05">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_05Solid" />
+    </volume>
+    <volume name="DeltaECavity_05">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_05Solid" />
+      <physvol name="DeltaEScintillator_05" copynumber="5">
+        <volumeref ref="DeltaEScintillator_05" />
+        <position name="DeltaEScintillator_05Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_05Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_05">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_05Solid" />
+      <physvol name="DeltaECavity_05" copynumber="5">
+        <volumeref ref="DeltaECavity_05" />
+        <position name="DeltaECavity_05Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_05Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_06">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_06Solid" />
+    </volume>
+    <volume name="DeltaECavity_06">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_06Solid" />
+      <physvol name="DeltaEScintillator_06" copynumber="6">
+        <volumeref ref="DeltaEScintillator_06" />
+        <position name="DeltaEScintillator_06Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_06Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_06">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_06Solid" />
+      <physvol name="DeltaECavity_06" copynumber="6">
+        <volumeref ref="DeltaECavity_06" />
+        <position name="DeltaECavity_06Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_06Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_07">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_07Solid" />
+    </volume>
+    <volume name="DeltaECavity_07">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_07Solid" />
+      <physvol name="DeltaEScintillator_07" copynumber="7">
+        <volumeref ref="DeltaEScintillator_07" />
+        <position name="DeltaEScintillator_07Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_07Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_07">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_07Solid" />
+      <physvol name="DeltaECavity_07" copynumber="7">
+        <volumeref ref="DeltaECavity_07" />
+        <position name="DeltaECavity_07Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_07Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_08">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_08Solid" />
+    </volume>
+    <volume name="DeltaECavity_08">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_08Solid" />
+      <physvol name="DeltaEScintillator_08" copynumber="8">
+        <volumeref ref="DeltaEScintillator_08" />
+        <position name="DeltaEScintillator_08Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_08Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_08">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_08Solid" />
+      <physvol name="DeltaECavity_08" copynumber="8">
+        <volumeref ref="DeltaECavity_08" />
+        <position name="DeltaECavity_08Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_08Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_09">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_09Solid" />
+    </volume>
+    <volume name="DeltaECavity_09">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_09Solid" />
+      <physvol name="DeltaEScintillator_09" copynumber="9">
+        <volumeref ref="DeltaEScintillator_09" />
+        <position name="DeltaEScintillator_09Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_09Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_09">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_09Solid" />
+      <physvol name="DeltaECavity_09" copynumber="9">
+        <volumeref ref="DeltaECavity_09" />
+        <position name="DeltaECavity_09Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_09Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_10">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_10Solid" />
+    </volume>
+    <volume name="DeltaECavity_10">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_10Solid" />
+      <physvol name="DeltaEScintillator_10" copynumber="10">
+        <volumeref ref="DeltaEScintillator_10" />
+        <position name="DeltaEScintillator_10Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_10Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_10">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_10Solid" />
+      <physvol name="DeltaECavity_10" copynumber="10">
+        <volumeref ref="DeltaECavity_10" />
+        <position name="DeltaECavity_10Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_10Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_11">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_11Solid" />
+    </volume>
+    <volume name="DeltaECavity_11">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_11Solid" />
+      <physvol name="DeltaEScintillator_11" copynumber="11">
+        <volumeref ref="DeltaEScintillator_11" />
+        <position name="DeltaEScintillator_11Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_11Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_11">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_11Solid" />
+      <physvol name="DeltaECavity_11" copynumber="11">
+        <volumeref ref="DeltaECavity_11" />
+        <position name="DeltaECavity_11Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_11Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_12">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_12Solid" />
+    </volume>
+    <volume name="DeltaECavity_12">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_12Solid" />
+      <physvol name="DeltaEScintillator_12" copynumber="12">
+        <volumeref ref="DeltaEScintillator_12" />
+        <position name="DeltaEScintillator_12Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_12Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_12">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_12Solid" />
+      <physvol name="DeltaECavity_12" copynumber="12">
+        <volumeref ref="DeltaECavity_12" />
+        <position name="DeltaECavity_12Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_12Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_13">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_13Solid" />
+    </volume>
+    <volume name="DeltaECavity_13">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_13Solid" />
+      <physvol name="DeltaEScintillator_13" copynumber="13">
+        <volumeref ref="DeltaEScintillator_13" />
+        <position name="DeltaEScintillator_13Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_13Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_13">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_13Solid" />
+      <physvol name="DeltaECavity_13" copynumber="13">
+        <volumeref ref="DeltaECavity_13" />
+        <position name="DeltaECavity_13Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_13Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_14">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_14Solid" />
+    </volume>
+    <volume name="DeltaECavity_14">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_14Solid" />
+      <physvol name="DeltaEScintillator_14" copynumber="14">
+        <volumeref ref="DeltaEScintillator_14" />
+        <position name="DeltaEScintillator_14Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_14Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_14">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_14Solid" />
+      <physvol name="DeltaECavity_14" copynumber="14">
+        <volumeref ref="DeltaECavity_14" />
+        <position name="DeltaECavity_14Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_14Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEScintillator_15">
+      <materialref ref="G4_POLYSTYRENE" />
+      <solidref ref="DeltaEScintillator_15Solid" />
+    </volume>
+    <volume name="DeltaECavity_15">
+      <materialref ref="G4_AIR" />
+      <solidref ref="DeltaECavity_15Solid" />
+      <physvol name="DeltaEScintillator_15" copynumber="15">
+        <volumeref ref="DeltaEScintillator_15" />
+        <position name="DeltaEScintillator_15Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaEScintillator_15Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="DeltaEHousing_15">
+      <materialref ref="PLA" />
+      <solidref ref="DeltaEHousing_15Solid" />
+      <physvol name="DeltaECavity_15" copynumber="15">
+        <volumeref ref="DeltaECavity_15" />
+        <position name="DeltaECavity_15Position" unit="cm" x="0" y="0" z="0" />
+        <rotation name="DeltaECavity_15Rotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+    </volume>
+    <volume name="World">
+      <materialref ref="G4_AIR" />
+      <solidref ref="WorldSolid" />
+      <physvol name="MWPCGas" copynumber="0">
+        <volumeref ref="MWPCGas" />
+        <position name="MWPCGasPosition" unit="cm" x="0" y="0" z="0" />
+        <rotation name="MWPCGasRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="BeamlineWall" copynumber="0">
+        <volumeref ref="BeamlineWall" />
+        <position name="BeamlineWallPosition" unit="cm" x="0" y="0" z="0" />
+        <rotation name="BeamlineWallRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="BeamlineVacuum" copynumber="0">
+        <volumeref ref="BeamlineVacuum" />
+        <position name="BeamlineVacuumPosition" unit="cm" x="0" y="0" z="0" />
+        <rotation name="BeamlineVacuumRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="FlangeNegative" copynumber="0">
+        <volumeref ref="Flange" />
+        <position name="FlangeNegativePosition" unit="cm" x="0" y="0" z="-13.77" />
+        <rotation name="FlangeNegativeRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="FlangePositive" copynumber="0">
+        <volumeref ref="Flange" />
+        <position name="FlangePositivePosition" unit="cm" x="0" y="0" z="13.77" />
+        <rotation name="FlangePositiveRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="ScintillatorWrap" copynumber="0">
+        <volumeref ref="ScintillatorWrap" />
+        <position name="ScintillatorWrapPosition" unit="cm" x="0" y="0" z="-70.0" />
+        <rotation name="ScintillatorWrapRotation" unit="rad" x="0" y="0" z="0" />
+      </physvol>
+      <physvol name="DeltaEHousing_00" copynumber="0">
+        <volumeref ref="DeltaEHousing_00" />
+        <position name="DeltaEHousing_00Position" unit="cm" x="-0.0" y="-14.372" z="0" />
+        <rotation name="DeltaEHousing_00Rotation" unit="rad" x="0" y="0" z="1.5707963267948966" />
+      </physvol>
+      <physvol name="DeltaEHousing_01" copynumber="1">
+        <volumeref ref="DeltaEHousing_01" />
+        <position name="DeltaEHousing_01Position" unit="cm" x="-5.499926289951071" y="-13.277996641252212" z="0" />
+        <rotation name="DeltaEHousing_01Rotation" unit="rad" x="0" y="0" z="1.9634954084936207" />
+      </physvol>
+      <physvol name="DeltaEHousing_02" copynumber="2">
+        <volumeref ref="DeltaEHousing_02" />
+        <position name="DeltaEHousing_02Position" unit="cm" x="-10.16253865921306" y="-10.162538659213062" z="0" />
+        <rotation name="DeltaEHousing_02Rotation" unit="rad" x="0" y="0" z="2.356194490192345" />
+      </physvol>
+      <physvol name="DeltaEHousing_03" copynumber="3">
+        <volumeref ref="DeltaEHousing_03" />
+        <position name="DeltaEHousing_03Position" unit="cm" x="-13.277996641252212" y="-5.4999262899510715" z="0" />
+        <rotation name="DeltaEHousing_03Rotation" unit="rad" x="0" y="0" z="2.748893571891069" />
+      </physvol>
+      <physvol name="DeltaEHousing_04" copynumber="4">
+        <volumeref ref="DeltaEHousing_04" />
+        <position name="DeltaEHousing_04Position" unit="cm" x="-14.372" y="-8.80031189867288e-16" z="0" />
+        <rotation name="DeltaEHousing_04Rotation" unit="rad" x="0" y="0" z="3.141592653589793" />
+      </physvol>
+      <physvol name="DeltaEHousing_05" copynumber="5">
+        <volumeref ref="DeltaEHousing_05" />
+        <position name="DeltaEHousing_05Position" unit="cm" x="-13.277996641252212" y="5.49992628995107" z="0" />
+        <rotation name="DeltaEHousing_05Rotation" unit="rad" x="0" y="0" z="3.5342917352885173" />
+      </physvol>
+      <physvol name="DeltaEHousing_06" copynumber="6">
+        <volumeref ref="DeltaEHousing_06" />
+        <position name="DeltaEHousing_06Position" unit="cm" x="-10.162538659213062" y="10.16253865921306" z="0" />
+        <rotation name="DeltaEHousing_06Rotation" unit="rad" x="0" y="0" z="3.9269908169872414" />
+      </physvol>
+      <physvol name="DeltaEHousing_07" copynumber="7">
+        <volumeref ref="DeltaEHousing_07" />
+        <position name="DeltaEHousing_07Position" unit="cm" x="-5.4999262899510715" y="13.277996641252212" z="0" />
+        <rotation name="DeltaEHousing_07Rotation" unit="rad" x="0" y="0" z="4.319689898685965" />
+      </physvol>
+      <physvol name="DeltaEHousing_08" copynumber="8">
+        <volumeref ref="DeltaEHousing_08" />
+        <position name="DeltaEHousing_08Position" unit="cm" x="-1.760062379734576e-15" y="14.372" z="0" />
+        <rotation name="DeltaEHousing_08Rotation" unit="rad" x="0" y="0" z="4.71238898038469" />
+      </physvol>
+      <physvol name="DeltaEHousing_09" copynumber="9">
+        <volumeref ref="DeltaEHousing_09" />
+        <position name="DeltaEHousing_09Position" unit="cm" x="5.499926289951069" y="13.277996641252214" z="0" />
+        <rotation name="DeltaEHousing_09Rotation" unit="rad" x="0" y="0" z="5.105088062083414" />
+      </physvol>
+      <physvol name="DeltaEHousing_10" copynumber="10">
+        <volumeref ref="DeltaEHousing_10" />
+        <position name="DeltaEHousing_10Position" unit="cm" x="10.16253865921306" y="10.162538659213062" z="0" />
+        <rotation name="DeltaEHousing_10Rotation" unit="rad" x="0" y="0" z="5.497787143782138" />
+      </physvol>
+      <physvol name="DeltaEHousing_11" copynumber="11">
+        <volumeref ref="DeltaEHousing_11" />
+        <position name="DeltaEHousing_11Position" unit="cm" x="13.27799664125221" y="5.499926289951079" z="0" />
+        <rotation name="DeltaEHousing_11Rotation" unit="rad" x="0" y="0" z="5.890486225480862" />
+      </physvol>
+      <physvol name="DeltaEHousing_12" copynumber="12">
+        <volumeref ref="DeltaEHousing_12" />
+        <position name="DeltaEHousing_12Position" unit="cm" x="14.372" y="2.640093569601864e-15" z="0" />
+        <rotation name="DeltaEHousing_12Rotation" unit="rad" x="0" y="0" z="6.283185307179586" />
+      </physvol>
+      <physvol name="DeltaEHousing_13" copynumber="13">
+        <volumeref ref="DeltaEHousing_13" />
+        <position name="DeltaEHousing_13Position" unit="cm" x="13.277996641252212" y="-5.499926289951073" z="0" />
+        <rotation name="DeltaEHousing_13Rotation" unit="rad" x="0" y="0" z="6.675884388878311" />
+      </physvol>
+      <physvol name="DeltaEHousing_14" copynumber="14">
+        <volumeref ref="DeltaEHousing_14" />
+        <position name="DeltaEHousing_14Position" unit="cm" x="10.162538659213062" y="-10.162538659213059" z="0" />
+        <rotation name="DeltaEHousing_14Rotation" unit="rad" x="0" y="0" z="7.0685834705770345" />
+      </physvol>
+      <physvol name="DeltaEHousing_15" copynumber="15">
+        <volumeref ref="DeltaEHousing_15" />
+        <position name="DeltaEHousing_15Position" unit="cm" x="5.4999262899510795" y="-13.27799664125221" z="0" />
+        <rotation name="DeltaEHousing_15Rotation" unit="rad" x="0" y="0" z="7.461282552275758" />
       </physvol>
     </volume>
   </structure>

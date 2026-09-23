@@ -1,11 +1,11 @@
 [runtime]
-mode = "batch"                                       # batch or visualization
+mode = "visualization"                                 # batch or visualization
 threads = 20
 geometry_file = "../geometry/world.gdml"
 events = 100_000
 progress_interval = 1000
 visualization_macro = "../macros/figures/whole.mac"
-output_file = "data/14september2026_100k_mixed.root"
+output_file = "data/official_geometry_100k_mixed.root"
 
 [source]
 mode = "mixed"                    # gun, ipc, x17, or mixed
@@ -18,6 +18,8 @@ gun_position_cm = [0.0, 0.0, 0.0]
 gun_direction = [0.0, 0.0, 1.0]
 
 [optics]
+# Optical extension: virtual absorbing sensors cover each long-bar end.
+# PVC has no optical table; side-boundary photons are absorbed.
 emission_min_ev = 2.5
 emission_max_ev = 3.5
 scintillation_yield_per_mev = 1000.0      # starter value; tune to measured scintillator
@@ -26,28 +28,35 @@ scintillation_decay_ns = 2.1
 scintillator_refractive_index = 1.58
 scintillator_absorption_length_cm = 200.0
 air_refractive_index = 1.0003
-glass_refractive_index = 1.50
 pmt_quantum_efficiency = 0.25             # idealized, wavelength-independent
 
 [geometry]
+# Active B4cDetectorConstruction.cc in WC_Scint_16dE_x; full lengths in cm.
+world_size_cm = 250.0
 scintillator_count = 16
 scintillator_length_cm = 140.0
 scintillator_inner_radius_cm = 16.0
-scintillator_radial_thickness_cm = 10.0
-scintillator_tangential_width_cm = 5.5  # placeholder
+scintillator_radial_thickness_cm = 9.5
+scintillator_wrap_thickness_cm = 0.02
 mwpc_inner_radius_cm = 6.0
+mwpc_outer_radius_cm = 6.8
 mwpc_length_cm = 36.0
 mwpc_wall_thickness_cm = 0.1
-rohacell_density_g_cm3 = 0.052          # assumed 51-grade foam
-pmt_radius_cm = 2.5                     # placeholder
-pmt_length_cm = 10.0                    # placeholder
-beamline_length_cm = 30.0               # placeholder
-beamline_outer_radius_cm = 2.5          # placeholder
-beamline_wall_cm = 0.08
-target_radius_cm = 1.0                  # placeholder
-al_foil_thickness_cm = 0.002            # placeholder
-lif_thickness_cm = 0.0001               # placeholder
-target_layer_gap_cm = 0.000001          # navigation gap
-cooling_rod_radius_cm = 0.05            # placeholder
-cooling_rod_length_cm = 1.32            # placeholder
-cooling_rod_center_y_cm = 1.71          # placeholder
+beamline_length_cm = 25.0
+beamline_inner_radius_cm = 2.995
+beamline_outer_radius_cm = 3.085
+beamline_vacuum_radius_cm = 2.99                # intentional 0.005 cm air gap
+flange_inner_radius_cm = 2.29
+flange_outer_radius_cm = 4.76
+flange_length_cm = 2.54
+target_radius_cm = 0.15875
+lif_thickness_cm = 0.00019
+target_z_cm = -0.05                             # source remains at the origin, as in the reference
+cooling_rod_inner_radius_cm = 0.05
+cooling_rod_outer_radius_cm = 0.15
+cooling_rod_center_y_cm = 1.905
+nut_size_cm = [0.635, 0.254, 0.635]
+delta_e_radius_cm = 14.372
+delta_e_size_cm = [0.2, 2.8, 8.094]
+delta_e_housing_size_cm = [3.175, 4.445, 20.32]
+delta_e_cavity_size_cm = [3.135, 3.81, 10.32]

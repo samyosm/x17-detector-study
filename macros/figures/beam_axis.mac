@@ -4,6 +4,6 @@
 # A small tilt reveals the depth of the ring while retaining the beam-axis view.
 /vis/viewer/set/viewpointVector 0.12 0.08 1
 /vis/viewer/set/upVector 0 1 0
-# The barrel's 160 cm axial extent sets the scene scale; larger zoom crops its ring.
+# The barrel's 140 cm axial extent sets the scene scale; larger zoom crops its ring.
 /vis/viewer/zoomTo 1.2
 /vis/viewer/flush

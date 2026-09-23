@@ -1,0 +1,40 @@
+# Inspect the DeltaE ring with the reference's colors.
+/control/execute macros/figures/style.mac
+/vis/geometry/set/visibility ScintillatorWrap 0 false
+/vis/geometry/set/visibility Scintillator 0 false
+/vis/geometry/set/visibility DeltaEHousing_00 0 false
+/vis/geometry/set/visibility DeltaECavity_00 0 false
+/vis/geometry/set/visibility DeltaEHousing_01 0 false
+/vis/geometry/set/visibility DeltaECavity_01 0 false
+/vis/geometry/set/visibility DeltaEHousing_02 0 false
+/vis/geometry/set/visibility DeltaECavity_02 0 false
+/vis/geometry/set/visibility DeltaEHousing_03 0 false
+/vis/geometry/set/visibility DeltaECavity_03 0 false
+/vis/geometry/set/visibility DeltaEHousing_04 0 false
+/vis/geometry/set/visibility DeltaECavity_04 0 false
+/vis/geometry/set/visibility DeltaEHousing_05 0 false
+/vis/geometry/set/visibility DeltaECavity_05 0 false
+/vis/geometry/set/visibility DeltaEHousing_06 0 false
+/vis/geometry/set/visibility DeltaECavity_06 0 false
+/vis/geometry/set/visibility DeltaEHousing_07 0 false
+/vis/geometry/set/visibility DeltaECavity_07 0 false
+/vis/geometry/set/visibility DeltaEHousing_08 0 false
+/vis/geometry/set/visibility DeltaECavity_08 0 false
+/vis/geometry/set/visibility DeltaEHousing_09 0 false
+/vis/geometry/set/visibility DeltaECavity_09 0 false
+/vis/geometry/set/visibility DeltaEHousing_10 0 false
+/vis/geometry/set/visibility DeltaECavity_10 0 false
+/vis/geometry/set/visibility DeltaEHousing_11 0 false
+/vis/geometry/set/visibility DeltaECavity_11 0 false
+/vis/geometry/set/visibility DeltaEHousing_12 0 false
+/vis/geometry/set/visibility DeltaECavity_12 0 false
+/vis/geometry/set/visibility DeltaEHousing_13 0 false
+/vis/geometry/set/visibility DeltaECavity_13 0 false
+/vis/geometry/set/visibility DeltaEHousing_14 0 false
+/vis/geometry/set/visibility DeltaECavity_14 0 false
+/vis/geometry/set/visibility DeltaEHousing_15 0 false
+/vis/geometry/set/visibility DeltaECavity_15 0 false
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 60 60
+/vis/viewer/zoomTo 1
+/vis/viewer/flush

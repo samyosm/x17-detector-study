@@ -1,9 +1,11 @@
 # Target in the barrel context; transparent bars and walls retain the scale.
 /control/execute macros/figures/style.mac
-/vis/geometry/set/visibility PMT 0 false
-/vis/geometry/set/colour Scintillator 0 0.12 0.47 0.78 0.18
-/vis/geometry/set/colour MWPCWall 0 0.35 0.54 0.62 0.18
-/vis/geometry/set/colour BeamlineWall 0 0.75 0.26 0.20 0.20
+/vis/geometry/set/colour Scintillator 0 0 1 1 0.18
+/vis/geometry/set/colour MWPCInnerWall 0 0.5 0.5 0.5 0.18
+/vis/geometry/set/colour BeamlineWall 0 0 1 0 0.20
+/vis/geometry/set/visibility ScintillatorWrap 0 false
+/vis/geometry/set/visibility MWPCOuterWall 0 false
+/vis/geometry/set/visibility MWPCGas 0 false
 /vis/drawVolume
 /vis/viewer/set/targetPoint 0 0 0 cm
 /vis/viewer/set/viewpointVector 1 0.8 0.6
