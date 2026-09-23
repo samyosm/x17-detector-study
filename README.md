@@ -15,13 +15,8 @@ Edit `config/configuration.toml` to set the source, run mode, and output file be
 
 ## Detector
 
-[Open the side-by-side reference comparison](docs/figures/reference_comparison/index.html)
-for seven views of both implementations, including ΔE housings, cavities,
-scintillators, wrapping and the target supports. Colors match the lead team's code.
-
-![Whole detector with reference PVC enclosure](docs/figures/reference_comparison/gdml_whole.png)
-
-![DeltaE scintillators with their covers hidden](docs/figures/reference_comparison/gdml_delta_e.png)
+[View the detector gallery](docs/index.html): seven views of the scintillators,
+chamber, ΔE detectors and target assembly. Site assets live in `docs/site/`.
 
 ## Results
 
