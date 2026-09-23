@@ -1,0 +1,48 @@
+[geometry]
+file = "../geometry/world.gdml"
+
+[geometry.world]
+size_cm = 250.0
+
+[geometry.scintillator]
+count = 16
+length_cm = 140.0
+inner_radius_cm = 16.0
+radial_thickness_cm = 9.5
+wrap_thickness_cm = 0.02
+
+[geometry.mwpc]
+inner_radius_cm = 6.0
+outer_radius_cm = 6.8
+length_cm = 36.0
+wall_thickness_cm = 0.1
+
+[geometry.beamline]
+length_cm = 25.0
+inner_radius_cm = 2.995
+outer_radius_cm = 3.085
+vacuum_radius_cm = 2.99
+
+[geometry.flange]
+inner_radius_cm = 2.29
+outer_radius_cm = 4.76
+length_cm = 2.54
+
+[geometry.target]
+radius_cm = 0.15875
+thickness_cm = 0.00019
+z_cm = -0.05
+
+[geometry.cooling_rod]
+inner_radius_cm = 0.05
+outer_radius_cm = 0.15
+center_y_cm = 1.905
+
+[geometry.nut]
+size_cm = [0.635, 0.254, 0.635]
+
+[geometry.delta_e]
+radius_cm = 14.372
+size_cm = [0.2, 2.8, 8.094]
+housing_size_cm = [3.175, 4.445, 20.32]
+cavity_size_cm = [3.135, 3.81, 10.32]

@@ -1,4 +1,3 @@
-# Inspect the DeltaE ring with the reference's colors.
 /control/execute macros/figures/style.mac
 /vis/geometry/set/visibility ScintillatorWrap 0 false
 /vis/geometry/set/visibility Scintillator 0 false

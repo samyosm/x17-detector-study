@@ -1,4 +1,3 @@
-# Draw only the chamber, beamline, and target volumes to avoid loading all bars.
 /control/execute macros/figures/style.mac
 /vis/drawVolume MWPCInnerWall
 /vis/scene/add/volume BeamlineWall

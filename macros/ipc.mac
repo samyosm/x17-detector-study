@@ -1,2 +1,1 @@
-# Set source.mode = "ipc" in configuration.toml before executing this manually.
 /run/beamOn 1000

@@ -23,5 +23,3 @@ chamber, ΔE detectors and target assembly. Site assets live in `docs/site/`.
 The truth plot below predates the geometry update.
 
 ![Truth values](docs/figures/14september2026_100k_mixed.png)
-
-

@@ -1,71 +1,27 @@
-#include "actions/ActionInitialization.hh"
+#include "application/Simulation.hh"
 #include "configuration/Configuration.hh"
-#include "detector/DetectorConstruction.hh"
-#include "source/SourceSettings.hh"
-
-#include "FTFP_BERT.hh"
-#include "G4OpticalParameters.hh"
-#include "G4OpticalPhysics.hh"
-#include "G4RunManagerFactory.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UIExecutive.hh"
-#include "G4UImanager.hh"
-#include "G4VisExecutive.hh"
-
 #include <exception>
 #include <iostream>
-#include <memory>
+#include <stdexcept>
 
-int main(int argc, char** argv) {
-    try {
-        if (argc != 1 && (argc != 3 || std::string(argv[1]) != "--config")) {
-            std::cerr << "Usage: simulate_detection [--config path]\n";
-            return 1;
-        }
-        const auto config = LoadConfiguration(argc == 3 ? argv[2] : CONFIG_PATH);
-        const auto& position = config.gunPositionCm;
-        const auto& direction = config.gunDirection;
-        auto source = std::make_shared<SourceSettings>(SourceSettings{
-            config.sourceMode,
-            config.transitionEnergyMeV * MeV,
-            config.x17MassMeV * MeV,
-            config.x17Fraction,
-            config.gunParticle,
-            config.gunEnergyMeV * MeV,
-            {position[0] * cm, position[1] * cm, position[2] * cm},
-            {direction[0], direction[1], direction[2]}
-        });
+namespace {
+std::filesystem::path ReadConfigurationPath(int argumentCount,
+                                            char **arguments) {
+  if (argumentCount == 1)
+    return CONFIG_PATH;
+  if (argumentCount == 3 && std::string(arguments[1]) == "--config")
+    return arguments[2];
+  throw std::invalid_argument("Usage: simulate_detection [--config path]");
+}
+} // namespace
 
-        auto runManager = std::unique_ptr<G4RunManager>(
-            G4RunManagerFactory::CreateRunManager(G4RunManagerType::MT));
-        runManager->SetNumberOfThreads(config.threads);
-        runManager->SetUserInitialization(
-            new DetectorConstruction(config.geometryFile.string(), config.optics));
-        auto* physics = new FTFP_BERT;
-        physics->RegisterPhysics(new G4OpticalPhysics);
-        G4OpticalParameters::Instance()->SetProcessActivation("Cerenkov", false);
-        runManager->SetUserInitialization(physics);
-        runManager->SetUserInitialization(
-            new ActionInitialization(source, config.outputFile,
-                                     config.progressInterval,
-                                     config.optics.quantumEfficiency));
-        runManager->Initialize();
-
-        auto* ui = G4UImanager::GetUIpointer();
-        if (config.mode == "batch") {
-            return ui->ApplyCommand("/run/beamOn " + std::to_string(config.events)) == 0 ? 0 : 1;
-        }
-
-        G4VisExecutive visualization;
-        visualization.Initialize();
-        char name[] = "simulate_detection";
-        char* arguments[] = {name, nullptr};
-        G4UIExecutive session(1, arguments);
-        if (ui->ApplyCommand("/control/execute " + config.visualizationMacro.string()) != 0) return 1;
-        session.SessionStart();
-        return 0;
-    } catch (const std::exception& error) {
-        std::cerr << "Error: " << error.what() << '\n';
-        return 1;
-    }
+int main(int argumentCount, char **arguments) {
+  try {
+    RunSimulation(
+        Configuration(ReadConfigurationPath(argumentCount, arguments)));
+    return 0;
+  } catch (const std::exception &error) {
+    std::cerr << "Error: " << error.what() << '\n';
+    return 1;
+  }
 }

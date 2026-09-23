@@ -1,4 +1,3 @@
-# Full assembly: same default visibility, colors and view angle as B4c/vis.mac.
 /control/execute macros/figures/style.mac
 /vis/drawVolume
 /vis/viewer/set/viewpointThetaPhi 60 60

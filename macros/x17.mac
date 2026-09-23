@@ -1,3 +1,1 @@
-# Set source.mode = "x17" and source.x17_mass_mev in configuration.toml
-# before executing this manually.
 /run/beamOn 1000

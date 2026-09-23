@@ -20,9 +20,10 @@ def _():
     with (Path(__file__).resolve().parents[1] / "config/configuration.toml").open("rb") as _stream:
         _config = tomllib.load(_stream)
     DATA_PATH = str(Path(__file__).resolve().parents[1] / _config["runtime"]["output_file"])
-    BAR_COUNT = _config["geometry"]["scintillator_count"]
-    SCINTILLATOR_RADIUS_CM = (_config["geometry"]["scintillator_inner_radius_cm"]
-                              + _config["geometry"]["scintillator_radial_thickness_cm"] / 2)
+    _geometry = tomllib.loads((Path(__file__).resolve().parents[1] / "config/geometry.toml").read_text())["geometry"]
+    BAR_COUNT = _geometry["scintillator"]["count"]
+    SCINTILLATOR_RADIUS_CM = (_geometry["scintillator"]["inner_radius_cm"]
+                              + _geometry["scintillator"]["radial_thickness_cm"] / 2)
     FIDUCIAL_HALF_LENGTH_CM = 55.0
     return (
         BAR_COUNT,
@@ -61,26 +62,8 @@ def _(mo):
 
 
 @app.cell
-def _(BAR_COUNT, DATA_PATH, ROOT):
-    def load_readout(path, bar_count):
-        event_branches = [
-            "event_id",
-            "source_mode",
-            "opening_angle_deg",
-            "positron_px_MeV",
-            "positron_py_MeV",
-            "positron_pz_MeV",
-            "electron_px_MeV",
-            "electron_py_MeV",
-            "electron_pz_MeV",
-        ]
-        pmt_branches = [
-            f"pmt_{bar:02d}_{end}_{field}"
-            for bar in range(1, bar_count + 1)
-            for end in ("D", "U")
-            for field in ("photons", "first_time_ns")
-        ]
-        return ROOT.RDataFrame("events", path).AsNumpy(event_branches + pmt_branches)
+def _(BAR_COUNT, DATA_PATH):
+    from root_data import load_readout
 
     readout = load_readout(DATA_PATH, BAR_COUNT)
     return (readout,)
@@ -132,26 +115,8 @@ def _(mo):
 
 
 @app.cell
-def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, np, pd, readout):
-    def project_tracks(data, radius, bar_count):
-        tracks = []
-        angle_step = 2.0 * np.pi / bar_count
-
-        for particle in ("positron", "electron"):
-            px = data[f"{particle}_px_MeV"]
-            py = data[f"{particle}_py_MeV"]
-            pz = data[f"{particle}_pz_MeV"]
-            transverse_momentum = np.hypot(px, py)
-            safe_momentum = np.where(transverse_momentum == 0, np.nan, transverse_momentum)
-            azimuth = np.mod(np.arctan2(py, px), 2.0 * np.pi)
-
-            tracks.append(pd.DataFrame({
-                "event_id": data["event_id"],
-                "bar": np.mod(np.round(np.mod(1.5 * np.pi - azimuth, 2 * np.pi) / angle_step).astype(int), bar_count) + 1,
-                "z_truth": radius * pz / safe_momentum,
-            }))
-
-        return pd.concat(tracks, ignore_index=True).dropna(subset=["z_truth"])
+def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, readout):
+    from reconstruction import project_tracks
 
     truth_df = project_tracks(readout, SCINTILLATOR_RADIUS_CM, BAR_COUNT)
     return (truth_df,)
@@ -176,27 +141,8 @@ def _(mo):
 
 
 @app.cell
-def _(BAR_COUNT, FIDUCIAL_HALF_LENGTH_CM, min_photon_count, np, pd, readout, truth_df):
-    def select_measurements(data, truth, bar_count, photon_threshold, half_length):
-        selected = []
-
-        for bar in range(1, bar_count + 1):
-            d_count = data[f"pmt_{bar:02d}_D_photons"]
-            u_count = data[f"pmt_{bar:02d}_U_photons"]
-            keep = (d_count > photon_threshold) & (u_count > photon_threshold)
-            selected.append(pd.DataFrame({
-                "event_id": data["event_id"][keep],
-                "bar": bar,
-                "D": d_count[keep],
-                "U": u_count[keep],
-                "t_D": data[f"pmt_{bar:02d}_D_first_time_ns"][keep],
-                "t_U": data[f"pmt_{bar:02d}_U_first_time_ns"][keep],
-            }))
-
-        pmt_data = pd.concat(selected, ignore_index=True)
-        single_tracks = truth.drop_duplicates(["event_id", "bar"], keep=False)
-        matched = pmt_data.merge(single_tracks, on=["event_id", "bar"], how="inner")
-        return matched[matched["z_truth"].abs() <= half_length].copy()
+def _(BAR_COUNT, FIDUCIAL_HALF_LENGTH_CM, min_photon_count, readout, truth_df):
+    from reconstruction import select_measurements
 
     measurements_df = select_measurements(
         readout,
@@ -221,15 +167,8 @@ def _(mo):
 
 
 @app.cell
-def _(calibration_percent, measurements_df, np):
-    def split_events(measurements, percent):
-        event_ids = measurements["event_id"].unique().copy()
-        generator = np.random.default_rng(0)
-        generator.shuffle(event_ids)
-        split_index = int(len(event_ids) * percent / 100)
-        calibration_ids = event_ids[:split_index]
-        is_calibration = measurements["event_id"].isin(calibration_ids)
-        return measurements[is_calibration].copy(), measurements[~is_calibration].copy()
+def _(calibration_percent, measurements_df):
+    from reconstruction import split_events
 
     calibration_df, validation_df = split_events(
         measurements_df,
@@ -269,27 +208,8 @@ def _(mo):
 
 
 @app.cell
-def _(calibration_df, linregress, np, pd):
-    def fit_attenuation(measurements):
-        data = measurements.copy()
-        data["log_ratio"] = np.log(data["D"].astype(float) / data["U"].astype(float))
-        fits = []
-
-        for bar, group in data.groupby("bar"):
-            fit = linregress(group["z_truth"], group["log_ratio"])
-            beta = -fit.slope
-            fits.append({
-                "bar": bar,
-                "events": len(group),
-                "alpha_0": np.exp(-fit.intercept),
-                "alpha_0_error": np.exp(-fit.intercept) * fit.intercept_stderr,
-                "beta_cm_inv": beta,
-                "beta_error": fit.stderr,
-                "lambda_cm": 2.0 / beta,
-                "lambda_error": 2.0 * fit.stderr / beta**2,
-            })
-
-        return data, pd.DataFrame(fits)
+def _(calibration_df):
+    from reconstruction import fit_attenuation
 
     attenuation_data_df, attenuation_fits_df = fit_attenuation(calibration_df)
     return attenuation_data_df, attenuation_fits_df
@@ -302,20 +222,8 @@ def _(attenuation_fits_df, mo):
 
 
 @app.cell
-def _(attenuation_data_df, attenuation_fits_df, mo, np, plt, selected_bar):
-    def plot_attenuation_fit(data, fits, bar):
-        selected = data[data["bar"] == bar].sort_values("z_truth")
-        fit = fits[fits["bar"] == bar].iloc[0]
-        fitted_log_ratio = (
-            -fit["beta_cm_inv"] * selected["z_truth"] - np.log(fit["alpha_0"])
-        )
-        figure, axis = plt.subplots()
-        axis.scatter(selected["z_truth"], selected["log_ratio"], s=5)
-        axis.plot(selected["z_truth"], fitted_log_ratio)
-        axis.set_xlabel("Truth z [cm]")
-        axis.set_ylabel("ln(D/U)")
-        axis.set_title(f"Attenuation fit for bar {bar:02d}")
-        return axis
+def _(attenuation_data_df, attenuation_fits_df, mo, selected_bar):
+    from detector_plots import plot_attenuation_fit
 
     attenuation_fit_axis = plot_attenuation_fit(
         attenuation_data_df,
@@ -349,31 +257,10 @@ def _(mo):
 
 
 @app.cell
-def _(attenuation_fits_df, np, pd, validation_df):
-    def summarize_positions(data, residual_column):
-        evaluated = data.copy()
-        evaluated["squared_error"] = evaluated[residual_column]**2
-        summary = evaluated.groupby("bar", as_index=False).agg(
-            events=(residual_column, "size"),
-            mean_squared_error=("squared_error", "mean"),
-        )
-        summary["rmse_cm"] = np.sqrt(summary.pop("mean_squared_error"))
-        return evaluated, summary
+def _(attenuation_fits_df, validation_df):
+    from reconstruction import summarize_positions
 
-    def reconstruct_attenuation(data, fits):
-        evaluated = data.copy()
-        evaluated["log_ratio"] = np.log(
-            evaluated["D"].astype(float) / evaluated["U"].astype(float)
-        )
-        calibration = fits[["bar", "alpha_0", "beta_cm_inv"]]
-        reconstructed = evaluated.merge(calibration, on="bar", how="inner")
-        reconstructed["z_attenuation"] = np.log(
-            reconstructed["U"] / (reconstructed["alpha_0"] * reconstructed["D"])
-        ) / reconstructed["beta_cm_inv"]
-        reconstructed["attenuation_residual"] = (
-            reconstructed["z_attenuation"] - reconstructed["z_truth"]
-        )
-        return reconstructed
+    from reconstruction import reconstruct_attenuation
 
     attenuation_reconstructed_df = reconstruct_attenuation(
         validation_df,
@@ -399,16 +286,8 @@ def _(attenuation_summary_df, mo, selected_bar):
 
 
 @app.cell
-def _(attenuation_reconstructed_df, mo, plt, selected_bar):
-    def plot_attenuation_reconstruction(data, bar):
-        selected = data[data["bar"] == bar]
-        figure, axis = plt.subplots()
-        axis.scatter(selected["z_truth"], selected["z_attenuation"], s=5)
-        axis.plot([-55, 55], [-55, 55])
-        axis.set_xlabel("Truth z [cm]")
-        axis.set_ylabel("Attenuation z [cm]")
-        axis.set_title(f"Attenuation reconstruction for bar {bar:02d}")
-        return axis
+def _(attenuation_reconstructed_df, mo, selected_bar):
+    from detector_plots import plot_attenuation_reconstruction
 
     attenuation_axis = plot_attenuation_reconstruction(
         attenuation_reconstructed_df,
@@ -442,39 +321,8 @@ def _(mo):
 
 
 @app.cell
-def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, attenuation_reconstructed_df, np, pd, readout):
-    def calculate_opening_angles(
-        positions,
-        data,
-        radius,
-        bar_count,
-        z_column,
-        angle_column,
-        error_column,
-    ):
-        complete = positions[
-            positions.groupby("event_id")["event_id"].transform("size") == 2
-        ].sort_values(["event_id", "bar"])
-        phi = 1.5 * np.pi - (complete["bar"].to_numpy() - 1) * 2.0 * np.pi / bar_count
-        directions = np.column_stack([
-            radius * np.cos(phi),
-            radius * np.sin(phi),
-            complete[z_column].to_numpy(),
-        ])
-        directions /= np.linalg.norm(directions, axis=1)[:, None]
-        pairs = directions.reshape(-1, 2, 3)
-        cosine = np.sum(pairs[:, 0] * pairs[:, 1], axis=1).clip(-1.0, 1.0)
-
-        event_truth = pd.DataFrame({
-            "event_id": data["event_id"],
-            "opening_angle_truth_deg": data["opening_angle_deg"],
-        })
-        angles = pd.DataFrame({
-            "event_id": complete["event_id"].to_numpy()[::2],
-            angle_column: np.degrees(np.arccos(cosine)),
-        }).merge(event_truth, on="event_id", how="left")
-        angles[error_column] = angles[angle_column] - angles["opening_angle_truth_deg"]
-        return angles
+def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, attenuation_reconstructed_df, readout):
+    from reconstruction import calculate_opening_angles
 
     opening_angles_df = calculate_opening_angles(
         attenuation_reconstructed_df,
@@ -499,16 +347,8 @@ def _(mo, opening_angles_df):
 
 
 @app.cell
-def _(mo, np, opening_angles_df, plt):
-    def plot_opening_angles(data):
-        figure, axis = plt.subplots()
-        bins = np.linspace(0, 180, 91)
-        axis.hist(data["opening_angle_truth_deg"], bins=bins, histtype="step", label="Truth")
-        axis.hist(data["opening_angle_reconstructed_deg"], bins=bins, histtype="step", label="Reconstructed")
-        axis.set_xlabel("Opening angle [degrees]")
-        axis.set_ylabel("Events")
-        axis.legend()
-        return axis
+def _(mo, opening_angles_df):
+    from detector_plots import plot_opening_angles
 
     opening_angle_axis = plot_opening_angles(opening_angles_df)
     mo.ui.matplotlib(opening_angle_axis)
@@ -542,32 +382,10 @@ def _(mo):
 
 
 @app.cell
-def _(calibration_df, linregress, np, pd):
-    def prepare_timing(measurements):
-        timed = measurements[
-            np.isfinite(measurements["t_D"]) & np.isfinite(measurements["t_U"])
-        ].copy()
-        timed["delta_t_ns"] = timed["t_D"] - timed["t_U"]
-        return timed
+def _(calibration_df):
+    from reconstruction import prepare_timing
 
-    def fit_timing(measurements):
-        timed = prepare_timing(measurements)
-        fits = []
-
-        for bar, group in timed.groupby("bar"):
-            fit = linregress(group["z_truth"], group["delta_t_ns"])
-            fits.append({
-                "bar": bar,
-                "events": len(group),
-                "v_eff_cm_ns": 2.0 / fit.slope,
-                "v_eff_error": 2.0 * fit.stderr / fit.slope**2,
-                "slope_ns_cm": fit.slope,
-                "slope_error": fit.stderr,
-                "time_offset_ns": fit.intercept,
-                "time_offset_error": fit.intercept_stderr,
-            })
-
-        return timed, pd.DataFrame(fits)
+    from reconstruction import fit_timing
 
     timing_data_df, timing_fits_df = fit_timing(calibration_df)
     return prepare_timing, timing_data_df, timing_fits_df
@@ -580,20 +398,8 @@ def _(mo, timing_fits_df):
 
 
 @app.cell
-def _(mo, plt, selected_bar, timing_data_df, timing_fits_df):
-    def plot_timing_fit(data, fits, bar):
-        selected = data[data["bar"] == bar].sort_values("z_truth")
-        fit = fits[fits["bar"] == bar].iloc[0]
-        fitted_time_difference = (
-            fit["time_offset_ns"] + fit["slope_ns_cm"] * selected["z_truth"]
-        )
-        figure, axis = plt.subplots()
-        axis.scatter(selected["z_truth"], selected["delta_t_ns"], s=5)
-        axis.plot(selected["z_truth"], fitted_time_difference)
-        axis.set_xlabel("Truth z [cm]")
-        axis.set_ylabel("t_D - t_U [ns]")
-        axis.set_title(f"Timing fit for bar {bar:02d}")
-        return axis
+def _(mo, selected_bar, timing_data_df, timing_fits_df):
+    from detector_plots import plot_timing_fit
 
     timing_fit_axis = plot_timing_fit(timing_data_df, timing_fits_df, selected_bar.value)
     mo.ui.matplotlib(timing_fit_axis)
@@ -620,19 +426,8 @@ def _(mo):
 
 
 @app.cell
-def _(prepare_timing, summarize_positions, timing_fits_df, validation_df):
-    def reconstruct_timing(data, fits):
-        timed = prepare_timing(data)
-        reconstructed = timed.merge(
-            fits[["bar", "slope_ns_cm", "time_offset_ns"]],
-            on="bar",
-            how="inner",
-        )
-        reconstructed["z_timing"] = (
-            reconstructed["delta_t_ns"] - reconstructed["time_offset_ns"]
-        ) / reconstructed["slope_ns_cm"]
-        reconstructed["timing_residual"] = reconstructed["z_timing"] - reconstructed["z_truth"]
-        return reconstructed
+def _(summarize_positions, timing_fits_df, validation_df):
+    from reconstruction import reconstruct_timing
 
     timing_reconstructed_df = reconstruct_timing(validation_df, timing_fits_df)
     timing_reconstructed_df, timing_summary_df = summarize_positions(
@@ -659,16 +454,8 @@ def _(mo, selected_bar, timing_summary_df):
 
 
 @app.cell
-def _(mo, plt, selected_bar, timing_reconstructed_df):
-    def plot_timing_reconstruction(data, bar):
-        selected = data[data["bar"] == bar]
-        figure, axis = plt.subplots()
-        axis.scatter(selected["z_truth"], selected["z_timing"], s=5)
-        axis.plot([-55, 55], [-55, 55])
-        axis.set_xlabel("Truth z [cm]")
-        axis.set_ylabel("Timing z [cm]")
-        axis.set_title(f"Timing reconstruction for bar {bar:02d}")
-        return axis
+def _(mo, selected_bar, timing_reconstructed_df):
+    from detector_plots import plot_timing_reconstruction
 
     timing_axis = plot_timing_reconstruction(timing_reconstructed_df, selected_bar.value)
     mo.ui.matplotlib(timing_axis)
@@ -724,18 +511,10 @@ def _(mo, timing_opening_angles_df):
 
 
 @app.cell
-def _(mo, np, plt, timing_opening_angles_df):
-    def plot_timing_opening_angles(data):
-        bins = np.linspace(0, 180, 91)
-        figure, axis = plt.subplots()
-        axis.hist(data["opening_angle_truth_deg"], bins=bins, histtype="step", label="Truth")
-        axis.hist(data["timing_opening_angle_deg"], bins=bins, histtype="step", label="Reconstructed")
-        axis.set_xlabel("Opening angle [degrees]")
-        axis.set_ylabel("Events")
-        axis.legend()
-        return axis
+def _(mo, timing_opening_angles_df):
+    from detector_plots import plot_opening_angles as plot_timing_opening_angles
 
-    timing_opening_axis = plot_timing_opening_angles(timing_opening_angles_df)
+    timing_opening_axis = plot_timing_opening_angles(timing_opening_angles_df, "timing_opening_angle_deg")
     mo.ui.matplotlib(timing_opening_axis)
     return
 
@@ -758,36 +537,8 @@ def _(mo):
 
 
 @app.cell
-def _(attenuation_reconstructed_df, np, pd, timing_reconstructed_df):
-    def compare_methods(attenuation, timing):
-        paired = attenuation[
-            ["event_id", "bar", "z_truth", "z_attenuation", "attenuation_residual"]
-        ].merge(
-            timing[["event_id", "bar", "z_timing", "timing_residual"]],
-            on=["event_id", "bar"],
-            how="inner",
-        )
-        summaries = []
-        for method, residual in (
-            ("Attenuation", "attenuation_residual"),
-            ("Timing", "timing_residual"),
-        ):
-            summaries.append({
-                "method": method,
-                "events": len(paired),
-                "rmse_cm": np.sqrt((paired[residual]**2).mean()),
-            })
-
-        paired["attenuation_squared_error"] = paired["attenuation_residual"]**2
-        paired["timing_squared_error"] = paired["timing_residual"]**2
-        per_bar = paired.groupby("bar", as_index=False).agg(
-            events=("event_id", "size"),
-            attenuation_mse=("attenuation_squared_error", "mean"),
-            timing_mse=("timing_squared_error", "mean"),
-        )
-        per_bar["attenuation_rmse_cm"] = np.sqrt(per_bar.pop("attenuation_mse"))
-        per_bar["timing_rmse_cm"] = np.sqrt(per_bar.pop("timing_mse"))
-        return paired, pd.DataFrame(summaries), per_bar
+def _(attenuation_reconstructed_df, timing_reconstructed_df):
+    from reconstruction import compare_methods
 
     comparison_df, method_summary_df, comparison_by_bar_df = compare_methods(
         attenuation_reconstructed_df,
@@ -817,22 +568,8 @@ def _(comparison_by_bar_df, method_summary_df, mo):
 
 
 @app.cell
-def _(comparison_df, mo, np, plt, selected_bar):
-    def plot_residual_comparison(data, bar):
-        selected = data[data["bar"] == bar]
-        limit = 2.0 * np.ceil(max(
-            selected["attenuation_residual"].abs().max(),
-            selected["timing_residual"].abs().max(),
-        ) / 2.0)
-        bins = np.arange(-limit, limit + 2.0, 2.0)
-        figure, axis = plt.subplots()
-        axis.hist(selected["attenuation_residual"], bins=bins, histtype="step", label="Attenuation")
-        axis.hist(selected["timing_residual"], bins=bins, histtype="step", label="Timing")
-        axis.set_xlabel("Reconstructed z - truth z [cm]")
-        axis.set_ylabel("Events")
-        axis.set_title(f"Residuals for bar {bar:02d}")
-        axis.legend()
-        return axis
+def _(comparison_df, mo, selected_bar):
+    from detector_plots import plot_residual_comparison
 
     comparison_axis = plot_residual_comparison(comparison_df, selected_bar.value)
     mo.ui.matplotlib(comparison_axis)

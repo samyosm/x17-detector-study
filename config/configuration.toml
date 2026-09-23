@@ -1,62 +1,53 @@
 [runtime]
-mode = "visualization"                                 # batch or visualization
+mode = "visualization"
 threads = 20
-geometry_file = "../geometry/world.gdml"
 events = 100_000
 progress_interval = 1000
-visualization_macro = "../macros/figures/whole.mac"
 output_file = "data/official_geometry_100k_mixed.root"
 
-[source]
-mode = "mixed"                    # gun, ipc, x17, or mixed
+[visualization]
+macro = "../macros/figures/whole.mac"
+
+[source.ipc]
+enable = true
+
+[source.x17]
+
+enable = true
+mass_mev = 17.0
+fraction = 0.05
+
+[source.pair]
 transition_energy_mev = 18.15
-x17_mass_mev = 17.0
-x17_fraction = 0.05               # probability of X17 per event
-gun_particle = "geantino"
-gun_energy_mev = 1.0
-gun_position_cm = [0.0, 0.0, 0.0]
-gun_direction = [0.0, 0.0, 1.0]
+
+[source.gun]
+enable = false
+particle = "geantino"
+energy_mev = 1.0
+position_cm = [0.0, 0.0, 0.0]
+direction = [0.0, 0.0, 1.0]
+
+[source.cosmic_muons]
+
+enable = false
 
 [optics]
-# Optical extension: virtual absorbing sensors cover each long-bar end.
-# PVC has no optical table; side-boundary photons are absorbed.
+enable = true
+
+[optics.scintillator]
 emission_min_ev = 2.5
 emission_max_ev = 3.5
-scintillation_yield_per_mev = 1000.0      # starter value; tune to measured scintillator
+yield_per_mev = 1000.0
 resolution_scale = 1.0
-scintillation_decay_ns = 2.1
-scintillator_refractive_index = 1.58
-scintillator_absorption_length_cm = 200.0
-air_refractive_index = 1.0003
-pmt_quantum_efficiency = 0.25             # idealized, wavelength-independent
+decay_ns = 2.1
+refractive_index = 1.58
+absorption_length_cm = 200.0
+
+[optics.air]
+refractive_index = 1.0003
+
+[optics.sensor]
+quantum_efficiency = 0.25
 
 [geometry]
-# Active B4cDetectorConstruction.cc in WC_Scint_16dE_x; full lengths in cm.
-world_size_cm = 250.0
-scintillator_count = 16
-scintillator_length_cm = 140.0
-scintillator_inner_radius_cm = 16.0
-scintillator_radial_thickness_cm = 9.5
-scintillator_wrap_thickness_cm = 0.02
-mwpc_inner_radius_cm = 6.0
-mwpc_outer_radius_cm = 6.8
-mwpc_length_cm = 36.0
-mwpc_wall_thickness_cm = 0.1
-beamline_length_cm = 25.0
-beamline_inner_radius_cm = 2.995
-beamline_outer_radius_cm = 3.085
-beamline_vacuum_radius_cm = 2.99                # intentional 0.005 cm air gap
-flange_inner_radius_cm = 2.29
-flange_outer_radius_cm = 4.76
-flange_length_cm = 2.54
-target_radius_cm = 0.15875
-lif_thickness_cm = 0.00019
-target_z_cm = -0.05                             # source remains at the origin, as in the reference
-cooling_rod_inner_radius_cm = 0.05
-cooling_rod_outer_radius_cm = 0.15
-cooling_rod_center_y_cm = 1.905
-nut_size_cm = [0.635, 0.254, 0.635]
-delta_e_radius_cm = 14.372
-delta_e_size_cm = [0.2, 2.8, 8.094]
-delta_e_housing_size_cm = [3.175, 4.445, 20.32]
-delta_e_cavity_size_cm = [3.135, 3.81, 10.32]
+file = "../geometry/world.gdml"

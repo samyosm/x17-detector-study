@@ -1,5 +1,3 @@
-# Reference colors/visibility are assigned by DetectorConstruction.
-# Match the team's vis.mac background and surface rendering.
 /vis/open OGLSQt
 /vis/viewer/set/background grey ! ! .6
 /vis/viewer/set/style surface
