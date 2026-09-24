@@ -17,13 +17,21 @@ def _():
     import tomllib
     from pathlib import Path
 
-    with (Path(__file__).resolve().parents[1] / "config/configuration.toml").open("rb") as _stream:
+    with (Path(__file__).resolve().parents[1] / "config/configuration.toml").open(
+        "rb"
+    ) as _stream:
         _config = tomllib.load(_stream)
-    DATA_PATH = str(Path(__file__).resolve().parents[1] / _config["runtime"]["output_file"])
-    _geometry = tomllib.loads((Path(__file__).resolve().parents[1] / "config/geometry.toml").read_text())["geometry"]
+    DATA_PATH = str(
+        Path(__file__).resolve().parents[1] / _config["runtime"]["output_file"]
+    )
+    _geometry = tomllib.loads(
+        (Path(__file__).resolve().parents[1] / "config/geometry.toml").read_text()
+    )["geometry"]
     BAR_COUNT = _geometry["scintillator"]["count"]
-    SCINTILLATOR_RADIUS_CM = (_geometry["scintillator"]["inner_radius_cm"]
-                              + _geometry["scintillator"]["radial_thickness_cm"] / 2)
+    SCINTILLATOR_RADIUS_CM = (
+        _geometry["scintillator"]["inner_radius_cm"]
+        + _geometry["scintillator"]["radial_thickness_cm"] / 2
+    )
     FIDUCIAL_HALF_LENGTH_CM = 55.0
     return (
         BAR_COUNT,
@@ -258,9 +266,7 @@ def _(mo):
 
 @app.cell
 def _(attenuation_fits_df, validation_df):
-    from reconstruction import summarize_positions
-
-    from reconstruction import reconstruct_attenuation
+    from reconstruction import reconstruct_attenuation, summarize_positions
 
     attenuation_reconstructed_df = reconstruct_attenuation(
         validation_df,
@@ -338,7 +344,9 @@ def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, attenuation_reconstructed_df, readout):
 
 @app.cell(hide_code=True)
 def _(mo, opening_angles_df):
-    opening_angle_rmse = (opening_angles_df["opening_angle_error_deg"]**2).mean()**0.5
+    opening_angle_rmse = (
+        opening_angles_df["opening_angle_error_deg"] ** 2
+    ).mean() ** 0.5
     mo.md(
         f"For {len(opening_angles_df):,} reconstructed pairs, the opening-angle RMSE is "
         f"{opening_angle_rmse:.2f}°."
@@ -383,9 +391,7 @@ def _(mo):
 
 @app.cell
 def _(calibration_df):
-    from reconstruction import prepare_timing
-
-    from reconstruction import fit_timing
+    from reconstruction import fit_timing, prepare_timing
 
     timing_data_df, timing_fits_df = fit_timing(calibration_df)
     return prepare_timing, timing_data_df, timing_fits_df
@@ -401,7 +407,9 @@ def _(mo, timing_fits_df):
 def _(mo, selected_bar, timing_data_df, timing_fits_df):
     from detector_plots import plot_timing_fit
 
-    timing_fit_axis = plot_timing_fit(timing_data_df, timing_fits_df, selected_bar.value)
+    timing_fit_axis = plot_timing_fit(
+        timing_data_df, timing_fits_df, selected_bar.value
+    )
     mo.ui.matplotlib(timing_fit_axis)
     return
 
@@ -445,7 +453,9 @@ def _(mo, timing_summary_df):
 
 @app.cell(hide_code=True)
 def _(mo, selected_bar, timing_summary_df):
-    timing_result = timing_summary_df[timing_summary_df["bar"] == selected_bar.value].iloc[0]
+    timing_result = timing_summary_df[
+        timing_summary_df["bar"] == selected_bar.value
+    ].iloc[0]
     mo.md(
         f"For bar {selected_bar.value:02d}, the timing RMSE is "
         f"{timing_result['rmse_cm']:.2f} cm."
@@ -457,7 +467,9 @@ def _(mo, selected_bar, timing_summary_df):
 def _(mo, selected_bar, timing_reconstructed_df):
     from detector_plots import plot_timing_reconstruction
 
-    timing_axis = plot_timing_reconstruction(timing_reconstructed_df, selected_bar.value)
+    timing_axis = plot_timing_reconstruction(
+        timing_reconstructed_df, selected_bar.value
+    )
     mo.ui.matplotlib(timing_axis)
     return
 
@@ -485,7 +497,13 @@ def _(mo):
 
 
 @app.cell
-def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, calculate_opening_angles, readout, timing_reconstructed_df):
+def _(
+    BAR_COUNT,
+    SCINTILLATOR_RADIUS_CM,
+    calculate_opening_angles,
+    readout,
+    timing_reconstructed_df,
+):
     timing_opening_angles_df = calculate_opening_angles(
         timing_reconstructed_df,
         readout,
@@ -501,8 +519,8 @@ def _(BAR_COUNT, SCINTILLATOR_RADIUS_CM, calculate_opening_angles, readout, timi
 @app.cell(hide_code=True)
 def _(mo, timing_opening_angles_df):
     timing_angle_rmse = (
-        timing_opening_angles_df["timing_opening_angle_error_deg"]**2
-    ).mean()**0.5
+        timing_opening_angles_df["timing_opening_angle_error_deg"] ** 2
+    ).mean() ** 0.5
     mo.md(
         f"For {len(timing_opening_angles_df):,} reconstructed pairs, the timing "
         f"opening-angle RMSE is {timing_angle_rmse:.2f}°."
@@ -514,7 +532,9 @@ def _(mo, timing_opening_angles_df):
 def _(mo, timing_opening_angles_df):
     from detector_plots import plot_opening_angles as plot_timing_opening_angles
 
-    timing_opening_axis = plot_timing_opening_angles(timing_opening_angles_df, "timing_opening_angle_deg")
+    timing_opening_axis = plot_timing_opening_angles(
+        timing_opening_angles_df, "timing_opening_angle_deg"
+    )
     mo.ui.matplotlib(timing_opening_axis)
     return
 
@@ -559,10 +579,12 @@ def _(method_summary_df, mo):
 
 @app.cell
 def _(comparison_by_bar_df, method_summary_df, mo):
-    method_tables = mo.vstack([
-        mo.ui.table(method_summary_df, selection=None, pagination=False),
-        mo.ui.table(comparison_by_bar_df, selection=None, page_size=16),
-    ])
+    method_tables = mo.vstack(
+        [
+            mo.ui.table(method_summary_df, selection=None, pagination=False),
+            mo.ui.table(comparison_by_bar_df, selection=None, page_size=16),
+        ]
+    )
     method_tables
     return
 
