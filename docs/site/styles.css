@@ -15,7 +15,7 @@ figure { margin: 0; }
 figure a { display: block; }
 img { display: block; width: 100%; height: auto; background: #999; }
 figcaption { padding-top: 12px; }
-h2 { margin: 0; font-size: 16px; font-weight: 600; }
+h2, h3 { margin: 0; font-size: 16px; font-weight: 600; }
 figcaption p { font-size: 14px; }
 a:focus-visible { outline: 3px solid #176b8a; outline-offset: 4px; }
 @media (max-width: 640px) {
@@ -23,3 +23,10 @@ a:focus-visible { outline: 3px solid #176b8a; outline-offset: 4px; }
   header { margin-bottom: 24px; }
   .views { grid-template-columns: 1fr; gap: 28px; }
 }
+
+.section-title { font-size: 20px; }
+.section-description { margin-bottom: 24px; }
+.analyses { margin-bottom: 40px; }
+.analyses ul { list-style: none; padding: 0; margin: 16px 0 0; }
+.analyses a { color: inherit; font-weight: 600; text-underline-offset: 3px; }
+.analyses p { font-size: 14px; }

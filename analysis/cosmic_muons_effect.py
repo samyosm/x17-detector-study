@@ -26,16 +26,18 @@ def _(mo):
     mo.md(r"""
     # Cosmic-muon coincidences
 
-    Can cosmic muons create structure in our detector's reconstructed pair angles?
-    This notebook applies the selections in the supplied **cosmic-muon study**
-    (`../cosmic-muons.pdf`, Sections III–V) to our sixteen-arm detector.
-    Figures 2–7 provide the plot definitions; their five- and six-arm geometries
-    are not our geometry, so their peak positions and efficiencies are not predictions here.
+    H. Benmansour et al., [*On the importance of cosmic-ray background in the
+    Atomki anomaly*](https://arxiv.org/abs/2609.18383v1), arXiv:2609.18383v1 (2026),
+    show that cosmic muons can produce angular peaks in simulated five- and six-arm
+    pair spectrometers. Detector geometry and deposited-energy selections shape
+    these peaks, potentially imitating features attributed to X17.
 
-    Each simulated event starts with one incident muon. A two-arm coincidence
-    is reconstructed as two directions from a presumed target vertex, even when
-    the deposits came from a through-going muon or its secondaries. This geometric
-    interpretation, rather than a generated electron–positron pair, defines the angle.
+    We apply their analysis to our sixteen-arm detector to estimate how often
+    muons pass the pair selection and whether they create similar structure.
+    A muon crossing two arms can be reconstructed as two particles leaving the
+    target. We follow that reconstruction from deposited energy to opening angle,
+    then estimate the background over an experimental exposure. The different
+    geometry means the paper's peak positions and rates need not carry over.
     """)
     return
 
@@ -88,32 +90,30 @@ def _(arm_count, data_path, generated_count, mo, run_config):
     _thresholds = run_config["readout"]["thresholds"]
     _source = run_config["source"]["cosmic_muons"]
     mo.md(rf"""
-    ## Run and trigger definition
+    ## From incident muons to detector hits
 
-    **{data_path.name}** contains **{generated_count:,} incident muons**, including
-    misses, against {run_config['runtime']['events']:,} requested events.
-    The saved geometry contains **{arm_count} arms**. Only the eight event branches
-    needed below are loaded; the much larger step tree is not read.
-
-    The saved source uses a {_source['plane']['side_cm']:g} cm square at
-    $y={_source['plane']['height_cm']:g}$ cm, zenith angles up to
-    {_source['angular']['zenith_max_deg']:g}°, and kinetic energies from
+    The selected run contains **{generated_count:,} incident muons** out of
+    {run_config['runtime']['events']:,} requested events, with **{arm_count} detector arms**.
+    Its source is a {_source['plane']['side_cm']:g} cm square at
+    y = {_source['plane']['height_cm']:g} cm, with zenith angles up to
+    {_source['angular']['zenith_max_deg']:g}° and kinetic energies from
     {_source['energy']['min_gev']:g} to {_source['energy']['max_gev']:g} GeV.
-    Configuration and geometry come from this run's sidecars, not today's detector settings.
+    These settings and the geometry are taken from the saved run records.
 
-    An arm is triggered only if **all three** deposits exceed the saved thresholds:
+    Each arm combines a long scintillator, a thin ΔE scintillator, and a matching
+    angular sector of the multiwire proportional chamber (MWPC). All three
+    deposits must exceed their thresholds for the arm to count as hit.
 
-    | Layer | Strict threshold |
+    | Layer | Deposit must exceed |
     |---|---:|
     | MWPC gas | {_thresholds['mwpc_mev'] * 1000:g} keV |
-    | Thin $\Delta E$ scintillator | {_thresholds['delta_e_mev'] * 1000:g} keV |
-    | Long $E$ scintillator | {_thresholds['scintillator_mev'] * 1000:g} keV |
+    | Thin ΔE scintillator | {_thresholds['delta_e_mev'] * 1000:g} keV |
+    | Long scintillator | {_thresholds['scintillator_mev'] * 1000:g} keV |
 
-    We use the recorded `n_hit`; changing thresholds requires recomputing hits from
-    `cosmic_arms`, not changing a plotting cut. The paper's Table II uses 50 keV for
-    $\Delta E$, whereas its prose says 100 keV for plastic scintillators; the saved
-    values above specify this run unambiguously. These are ideal deposit thresholds,
-    with no electronics resolution or optical coincidence requirement.
+    These are ideal energy-deposit requirements; electronics resolution and
+    coincidence timing are not modelled. The hit counts already incorporate
+    these thresholds. Testing other thresholds requires recalculating the hits
+    from the individual arm deposits.
     """)
     return
 
@@ -132,16 +132,18 @@ def _(events, np):
 @app.cell(hide_code=True)
 def _(generated_count, invalid_pair_count, mo, two_arm_events):
     mo.md(rf"""
-    ## Multiplicity and coincidence efficiency
+    ## Selecting two-arm coincidences
 
-    **{len(two_arm_events):,} / {generated_count:,}** incident muons triggered exactly
-    two arms: **{len(two_arm_events) / generated_count:.4%}**.
-    There are **{invalid_pair_count:,}** two-arm rows with non-finite observables;
-    these are excluded from the following pair plots, but remain in the incident
-    and trigger counts. Empty selections produce empty histograms rather than fits.
+    The number of hit arms is the event's *multiplicity*. We retain events with
+    exactly two hit arms, giving **{len(two_arm_events):,} coincidences** and an
+    efficiency of **{len(two_arm_events) / generated_count:.4%}**.
+    Efficiency is the selected count divided by all generated muons, including
+    those that miss the detector.
 
-    A miss is a real trial. The efficiency denominator is the number of rows in
-    `cosmic_events`, never the number of detected particles or the requested run size.
+    Of these coincidences, **{invalid_pair_count:,}** have undefined energy or angle
+    values and are excluded from subsequent distributions. They remain included
+    in the trigger count. The multiplicity distribution below shows how often
+    an incident muon produces each number of hit arms.
     """)
     return
 
@@ -158,23 +160,24 @@ def _(arm_count, events, mo, np, plt):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Deposited energy and asymmetry — Figure 2
+    ## Energy sharing between the arms
 
-    For two triggered arms, let $E_i=E_{i,\mathrm{long}}+E_{i,\Delta E}$.
-    Gas energy establishes the trigger but is not included in this sum:
+    For each selected arm, add the long-scintillator and ΔE deposits to obtain
+    its energy, E₁ or E₂. The gas deposit establishes the hit but is excluded
+    from this energy sum. Two quantities describe the pair:
 
-    $$E_{\rm sum}=E_1+E_2,\qquad A=\frac{|E_1-E_2|}{E_1+E_2}.$$
+    - **Summed energy:** E_sum = E₁ + E₂.
+    - **Energy asymmetry:** A = |E₁ − E₂| / (E₁ + E₂).
 
-    The stored asymmetry is **nonnegative**, equivalent to ordering $E_1\ge E_2$.
-    We plot $0\le A\le1$, without inventing a signed distribution to match the
-    paper's display. Symmetric events have $A<0.5$; asymmetric events have
-    $A\ge0.5$, assigning equality explicitly. Energy windows are half-open
-    $[E_{\min},E_{\max})$ so adjacent signal/control samples do not share a boundary.
-    The beryllium and helium studies are separate selections and may overlap.
+    Equal deposits give A = 0; a deposit concentrated in one arm gives A near 1.
+    We call events with A < 0.5 symmetric and those with A ≥ 0.5 asymmetric.
+    This split tests whether comparable deposits in two arms preferentially
+    produce an angular concentration.
 
-    All unscaled plots show counts with common bins, not independently normalized
-    shapes. Energy spectra use 1 MeV bins spanning the sample; angular bins are
-    controlled above. No smoothing or background subtraction is applied.
+    Energy spectra use 1 MeV bins. Angular plots use the bin width selected above.
+    Curves retain their event counts so differences in selection yield remain
+    visible. Energy windows include the lower boundary and exclude the upper
+    boundary, keeping adjacent signal and control samples separate.
     """)
     return
 
@@ -235,20 +238,22 @@ def _(draw_counts, energy_edges, mark_energy_windows, mo, np, pairs, plt, window
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Energy–angle correlation — Figures 3 and 6
+    ## Reconstructing the opening angle
 
-    In each triggered MWPC sector the simulation records the energy-weighted
-    step-midpoint centroid, $\mathbf r_i=\sum_j\Delta E_j\mathbf r_j/\sum_j\Delta E_j$.
-    From the assumed target position $\mathbf v$,
+    The MWPC provides a position for each hit arm. In the simulation this is the
+    average of the deposit-step midpoints, weighted by their deposited energies.
+    Draw a vector from the assumed target position to each of the two positions;
+    the angle between those vectors is the reconstructed opening angle.
 
-    $$\theta=\arccos\left(
-    \frac{(\mathbf r_1-\mathbf v)\cdot(\mathbf r_2-\mathbf v)}
-    {|\mathbf r_1-\mathbf v|\,|\mathbf r_2-\mathbf v|}\right).$$
+    A through-going muon need not originate at the target. Nevertheless, applying
+    this pair reconstruction gives it an apparent opening angle. The same track's
+    path through the scintillators determines its energy deposit, so energy and
+    angle can become correlated.
 
-    Both maps below use $\mathbf v=0$ and the same two-arm sample, bins, and color
-    scale. They differ only in the highlighted study windows. A correlation can
-    arise because track path length affects deposited energy while the same track
-    determines which sectors and centroid positions are hit.
+    The maps below expose that correlation before any energy selection. Both use
+    the detector centre as the assumed vertex and share the same data, bins, and
+    colour scale. The highlighted bands identify the signal and control windows
+    used in the comparisons that follow.
     """)
     return
 
@@ -273,17 +278,17 @@ def _(angle_edges, energy_edges, mark_energy_windows, mo, np, pairs, plt, window
 @app.cell(hide_code=True)
 def _(arm_count, mo):
     mo.md(rf"""
-    ## Arm-pair geometry
+    ## Connecting the angle to detector geometry
 
-    Our {arm_count} equally spaced sectors have pitch $360°/{arm_count}$.
-    For one-based arm indices $i,j$, their smaller azimuthal separation is
+    The {arm_count} arms are equally spaced around the beam axis, with a pitch of
+    {360 / arm_count:g}°. For arms i and j, the smaller separation is the pitch
+    multiplied by min(|i − j|, {arm_count} − |i − j|).
 
-    $$\Delta\phi=\frac{{360°}}{{{arm_count}}}
-    \min(|i-j|,{arm_count}-|i-j|).$$
-
-    This is a sector-centre separation, not the reconstructed three-dimensional
-    opening angle. The table and map test the geometric explanation discussed
-    around Figures 3 and 6 without imposing the paper's three six-arm categories.
+    This transverse separation helps identify which arm pairs produce a feature
+    in the angular spectrum. The reconstructed angle also depends on where along
+    the detector the deposits occur, so a single arm separation can produce a
+    range of three-dimensional opening angles. The table counts each separation;
+    the map relates it to the reconstructed angle.
     """)
     return
 
@@ -313,13 +318,16 @@ def _(angle_edges, arm_count, mo, np, pairs, pd, plt):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Beryllium windows — Figure 4
+    ## Testing the beryllium energy selection
 
-    Compare symmetric and asymmetric two-arm events in the 16–20 MeV signal
-    window, then repeat in the 12–16 MeV control window. Both panels have identical
-    angular bins and a shared count scale. A concentration confined to a selected
-    energy band should be checked against the full energy–angle map before it is
-    interpreted as a particle signal.
+    Following the beryllium-8 analysis, select a **16–20 MeV signal window** and
+    compare it with a **12–16 MeV control window**. Here “signal window” names an
+    energy selection; every event in this sample was generated by a cosmic muon.
+
+    Within each window, compare symmetric and asymmetric energy sharing. The
+    shared axes make both the angular shapes and the event yields comparable.
+    A feature enhanced by a particular energy and asymmetry selection can arise
+    from the correlation seen in the full energy–angle map.
     """)
     return
 
@@ -344,13 +352,17 @@ def _(angle_edges, angular_bin_width, draw_counts, mo, pairs, plt, select_window
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Helium windows and assumed vertex — Figure 5
+    ## Testing the helium selection and target position
 
-    Select symmetric events in 18–22 MeV and 14–18 MeV. For each sample compare
-    the recorded angles from $\mathbf v=(0,0,0)$ and $\mathbf v=(0,0,2.5\ \mathrm{cm})$.
-    The same events enter both curves; only the assumed vertex changes.
-    This is a reconstruction hypothesis, not a new simulation with the physical
-    target moved. The deposited energies and triggered arms remain unchanged.
+    The helium-4 comparison uses **18–22 MeV** for the signal window and
+    **14–18 MeV** for the control window, retaining symmetric events. These
+    selections overlap the beryllium windows and are evaluated separately.
+
+    For each sample, reconstruct the angle twice: once from the detector centre
+    and once from a point displaced by +25 mm along the beam axis, following the
+    target offset considered in the study. Both curves contain the same events.
+    Their difference measures the effect of the assumed vertex on reconstruction;
+    the physical target and energy deposits have not been changed.
     """)
     return
 
@@ -374,12 +386,13 @@ def _(angle_edges, angular_bin_width, draw_counts, mo, pairs, plt, select_window
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Signal and control overlaid — Figure 7
+    ## Comparing signal and control shapes
 
-    Overlay symmetric signal events, asymmetric signal events, and symmetric
-    control events using the origin-based angle. The windows have equal width
-    (4 MeV), and no additional area normalization is applied. Unlike the original
-    Figure 7, these curves all describe our sixteen-arm apparatus.
+    Bringing the beryllium selections onto one axis makes their relative sizes
+    easier to compare. The curves show symmetric signal-window events,
+    asymmetric signal-window events, and symmetric control-window events.
+    Both energy windows are 4 MeV wide. Their counts are used directly, without
+    rescaling the curves to equal areas.
     """)
     return
 
@@ -405,25 +418,23 @@ def _(angle_edges, angular_bin_width, draw_counts, mo, pairs, plt, select_window
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Selection yields and an exposure estimate
+    ## From selected counts to an exposure estimate
 
-    For $N$ incident muons and $n$ selected events, the estimated efficiency is
-    $\hat\epsilon=n/N$. The table gives a 95% Wilson binomial interval, which
-    remains meaningful when a small sample yields zero coincidences:
+    If n of N incident muons pass a selection, its estimated efficiency is n / N.
+    The table reports this fraction and a **95% Wilson binomial confidence
+    interval**. Unlike a simple symmetric error bar, this interval gives a
+    nonzero upper bound even when no events survive. It describes counting
+    uncertainty in the simulation; it does not include uncertainty in the source
+    or detector model.
 
-    $$c=\frac{\hat\epsilon+z^2/(2N)}{1+z^2/N},\qquad
-    h=\frac{z\sqrt{\hat\epsilon(1-\hat\epsilon)/N+z^2/(4N^2)}}{1+z^2/N},
-    \quad z=1.96.$$
+    To estimate an experimental yield, multiply the efficiency by the expected
+    number of incident muons. Adopting the study's assumed rate of **700 muons/s**
+    for **300 hours** gives 756 million incident muons. Each simulated event
+    therefore carries a weight of 756 million / N in the exposure-scaled plots.
 
-    The interval is $[c-h,c+h]$, clipped to $[0,1]$. It describes Monte Carlo
-    counting uncertainty, not uncertainty in the cosmic spectrum or detector model.
-
-    The paper assumes $R_\mu=700$ incident muons/s through its source plane and
-    $T=300$ hours. **If we adopt that same external rate**, the expected selected
-    count is $R_\mu T\hat\epsilon$ and each simulated event has weight
-    $w=R_\mu T/N$. This does not turn the generated sample into 300 hours of
-    statistical precision. It is not a measured rate for our setup. Rescaling
-    to a different plane or incident spectrum requires a new rate calculation.
+    This rate is an external assumption, not a measurement of our setup.
+    Scaling the sample changes its predicted yield but does not improve its
+    statistical precision.
     """)
     return
 
@@ -463,18 +474,20 @@ def _(mo, yield_table):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Cosmic component of Figures 9 and 10
+    ## Predicted cosmic spectra
 
-    The following spectra apply the exposure weight above to the two-arm sample.
-    Energy includes all two-arm asymmetries; angular panels require $A<0.5$.
-    Error bars show the per-bin Monte Carlo uncertainty $w\sqrt{n}$ (the usual
-    Poisson approximation), not the counting error of a real 300-hour exposure.
+    Applying the exposure weight gives the cosmic energy and angular spectra
+    below. The energy spectrum includes all two-arm coincidences; the angular
+    spectra additionally require symmetric energy sharing in the beryllium windows.
+    Error bars are the event weight times the square root of the simulated bin
+    count, a Poisson approximation to Monte Carlo counting uncertainty. For empty
+    selections, use the confidence interval in the table rather than a zero error bar.
 
-    Figure 8 needs a generated and reconstructed IPC sample plus the experimental
-    acceptance data. The complete Figures 9–10 additionally need the paper's
-    Zhang–Miller IPC model and reaction-rate normalization. Our current simplified
-    IPC source does not supply those inputs. We therefore show **cosmics only**;
-    no IPC curve, cosmic-to-IPC ratio, or claimed X17 significance is inferred.
+    Estimating the cosmic fraction of an experimental pair sample also requires
+    the nuclear background from internal pair conversion (IPC). That comparison
+    needs a validated IPC model and its absolute reaction rate. This analysis
+    estimates the cosmic contribution alone; the current simplified IPC source
+    does not reproduce the study's full Zhang–Miller calculation.
     """)
     return
 
@@ -501,18 +514,19 @@ def _(angle_edges, angular_bin_width, energy_edges, exposure_weight, mo, np, pai
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Reading the result
+    ## Interpreting the background
 
-    First inspect coincidence efficiency and the number of events in each window.
-    Then compare energy–angle correlations, arm separation, asymmetry selections,
-    and the shifted-vertex curves. A peak that changes with these choices supports
-    a geometric/selection explanation within this simulation; it does not alone
-    establish the origin of an experimental excess. Empty bins in a small sample
-    do not establish zero background.
+    The coincidence efficiency sets the overall rate. The energy–angle maps and
+    arm separations explain its shape, while the energy, asymmetry, and vertex
+    comparisons reveal how the final selection changes it. Together these checks
+    distinguish a broad cosmic contribution from one concentrated in a candidate
+    signal region.
 
-    For more precision, generate more independent muons with a new seed and output
-    name. Do not count reruns with the same seed as independent exposure. Preserve
-    the ROOT file and its configuration, geometry, and run manifest together.
+    A small or empty selected sample limits what can be concluded. More independent
+    simulated events improve counting precision; beam-off data test whether the
+    predicted rates and shapes describe the real detector. The practical criterion
+    is whether the validated cosmic contribution lies below the experiment's
+    acceptable background in its final signal selection.
     """)
     return
 
