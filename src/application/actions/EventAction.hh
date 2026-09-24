@@ -11,7 +11,7 @@ class PrimaryGeneratorAction;
 class EventAction final : public G4UserEventAction {
 public:
     EventAction(const PrimaryGeneratorAction* source, int progressInterval,
-                const Configuration* cosmic = nullptr);
+                const Configuration* cosmic = nullptr, int checkpointEvents = 0);
     ~EventAction() override;
     void RecordSensitiveEnergyDeposit(const G4Step* step);
     void BeginOfEventAction(const G4Event* event) override;
@@ -23,5 +23,6 @@ private:
     EventReadout readout_;
     const PrimaryGeneratorAction* source_;
     int progressInterval_;
+    int checkpointEvents_;
     bool recordSteps_;
 };

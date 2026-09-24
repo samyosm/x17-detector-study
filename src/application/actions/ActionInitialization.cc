@@ -1,4 +1,5 @@
 #include "application/actions/ActionInitialization.hh"
+#include "output/RunFiles.hh"
 #include "application/actions/EventAction.hh"
 #include "application/actions/RunAction.hh"
 #include "application/actions/SteppingAction.hh"
@@ -15,7 +16,8 @@ void ActionInitialization::Build() const {
   auto *eventAction = new EventAction(
       source, config_.Get<int>("runtime.progress_interval"),
       config_.Get<bool>("source.cosmic_muons.enable", false) ? &config_
-                                                             : nullptr);
+                                                             : nullptr,
+      UsesCheckpoints(config_) ? CheckpointEventCount(config_) : 0);
   SetUserAction(eventAction);
   const auto efficiency =
       config_.Get<bool>("optics.enable", false)

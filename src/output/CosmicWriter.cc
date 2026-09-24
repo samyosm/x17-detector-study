@@ -61,14 +61,14 @@ void WriteArmDeposits(int eventId, const DetectorDeposits &deposits) {
   }
 }
 
-void WriteCosmicEvent(const G4Event &event,
+void WriteCosmicEvent(int eventId, const G4Event &event,
                       const CosmicObservables &observables) {
   const auto *vertex = event.GetPrimaryVertex();
   const auto *muon = vertex->GetPrimary();
   const auto position = vertex->GetPosition() / cm;
   const auto direction = muon->GetMomentum().unit();
   const bool hasPair = observables.hitArms.size() == 2;
-  const int identifiers[] = {event.GetEventID(),
+  const int identifiers[] = {eventId,
                              muon->GetPDGcode(),
                              static_cast<int>(observables.hitArms.size()),
                              observables.hitMask,

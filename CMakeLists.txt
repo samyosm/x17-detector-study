@@ -3,6 +3,7 @@ project(x17_detector_study LANGUAGES CXX)
 
 find_package(Geant4 REQUIRED ui_all vis_all)
 find_path(TOMLPLUSPLUS_INCLUDE_DIR toml++/toml.h REQUIRED)
+find_program(ROOT_HADD_EXECUTABLE hadd REQUIRED)
 
 add_library(detector_core STATIC
     src/application/Simulation.cc
@@ -20,6 +21,7 @@ add_library(detector_core STATIC
     src/output/EventWriter.cc
     src/output/RootSchema.cc
     src/output/RunFiles.cc
+    src/output/MergeRunFiles.cc
     src/physics/CosmicMuonSpectrum.cc
     src/physics/CosmicObservables.cc
     src/physics/OpticalMaterials.cc
@@ -40,6 +42,7 @@ add_library(detector_core STATIC
     src/visualization/VisualizationSession.cc
 )
 target_compile_features(detector_core PUBLIC cxx_std_17)
+target_compile_definitions(detector_core PRIVATE ROOT_HADD_EXECUTABLE="${ROOT_HADD_EXECUTABLE}")
 target_include_directories(detector_core PUBLIC src ${TOMLPLUSPLUS_INCLUDE_DIR})
 target_link_libraries(detector_core PUBLIC
     ${Geant4_LIBRARIES}

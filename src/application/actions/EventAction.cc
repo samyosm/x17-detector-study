@@ -6,6 +6,8 @@
 #include "physics/CosmicObservables.hh"
 #include "physics/PairObservables.hh"
 #include "G4Event.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <atomic>
 #include <cstdint>
@@ -21,9 +23,9 @@ void ReportProgress(int interval) {
 }
 
 EventAction::EventAction(const PrimaryGeneratorAction* source, int progressInterval,
-                         const Configuration* cosmic)
+                         const Configuration* cosmic, int checkpointEvents)
     : cosmic_(cosmic ? std::make_unique<CosmicReadout>(*cosmic) : nullptr),
-      source_(source), progressInterval_(progressInterval),
+      source_(source), progressInterval_(progressInterval), checkpointEvents_(checkpointEvents),
       recordSteps_(cosmic && cosmic->Get<bool>("readout.record_steps")) {}
 
 EventAction::~EventAction() = default;
@@ -36,7 +38,8 @@ void EventAction::RecordSensitiveEnergyDeposit(const G4Step* step) {
 }
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
-    readout_ = EventReadout(event->GetEventID());
+    const int offset = checkpointEvents_ * G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
+    readout_ = EventReadout(offset + event->GetEventID());
     if (cosmic_) cosmic_->Reset();
 }
 
@@ -58,7 +61,7 @@ void EventAction::EndOfEventAction(const G4Event* event) {
     WriteEvent(readout_, source_->GetModeId(), CalculatePrimaryPairObservables(*event));
     if (cosmic_) {
         WriteArmDeposits(readout_.eventId, cosmic_->Deposits());
-        WriteCosmicEvent(*event, CalculateCosmicObservables(cosmic_->Deposits(), cosmic_->Thresholds()));
+        WriteCosmicEvent(readout_.eventId, *event, CalculateCosmicObservables(cosmic_->Deposits(), cosmic_->Thresholds()));
     }
     ReportProgress(progressInterval_);
 }

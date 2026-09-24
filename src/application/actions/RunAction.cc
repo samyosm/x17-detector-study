@@ -4,20 +4,25 @@
 
 #include "G4AnalysisManager.hh"
 
-#include <utility>
+#include "G4Run.hh"
+#include <stdexcept>
 
 RunAction::RunAction(const Configuration& config)
     : config_(config) {
     DefineRootTrees();
 }
 
-void RunAction::BeginOfRunAction(const G4Run*) {
-    if (IsMaster()) PrepareRunFiles(config_);
-    G4AnalysisManager::Instance()->OpenFile(config_.Get<std::string>("runtime.output_file"));
+void RunAction::BeginOfRunAction(const G4Run* run) {
+    if (IsMaster()) PrepareRunFiles(config_, run->GetRunID());
+    const auto path = PendingRunOutputFile(config_, run->GetRunID()).string();
+    if (!G4AnalysisManager::Instance()->OpenFile(path))
+        throw std::runtime_error("Could not open ROOT output: " + path);
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
     auto* analysis = G4AnalysisManager::Instance();
-    analysis->Write();
-    analysis->CloseFile();
+    const bool written = analysis->Write();
+    const bool closed = analysis->CloseFile();
+    if (!written || !closed)
+        throw std::runtime_error("Could not finalize ROOT output; checkpoint remains incomplete");
 }
