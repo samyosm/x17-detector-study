@@ -6,7 +6,8 @@ class CosmicMuonSpectrum {
 public:
   explicit CosmicMuonSpectrum(const Configuration &config);
   double SampleEnergyGeV(double zenithCosine) const;
-  double MinimumZenithCosine() const { return minimumCosine_; }
+  double SampleZenithCosine() const;
+  double HorizontalFluxPerCm2Second() const;
 
 private:
   struct Spectrum {
@@ -15,8 +16,10 @@ private:
   Spectrum BuildSpectrum(double zenithCosine) const;
   const Spectrum &SelectInterpolatedSpectrum(double zenithCosine) const;
   double InvertCumulativeSpectrum(const Spectrum &spectrum,
-                                  double cumulativeArea) const;
+                                  double cumulativeArea,
+                                  const std::vector<double> &nodes) const;
   double minimumCosine_;
-  std::vector<double> energies_;
+  std::vector<double> energies_, cosines_;
+  Spectrum angularSpectrum_;
   std::vector<Spectrum> spectra_;
 };

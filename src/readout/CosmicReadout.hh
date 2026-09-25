@@ -9,7 +9,7 @@ public:
   explicit CosmicReadout(const Configuration &config);
   void Reset();
   std::optional<detector::SensitiveDetectorAddress>
-  RecordDeposit(const G4Step &step);
+  RecordDeposit(const G4Step &step, detector::Layer layer);
   const DetectorDeposits &Deposits() const { return deposits_; }
   const EnergyThresholds &Thresholds() const { return thresholds_; }
 

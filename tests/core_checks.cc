@@ -6,6 +6,8 @@
 #include "geometry/DetectorLayout.hh"
 #include "output/RootOutput.hh"
 #include "physics/CosmicObservables.hh"
+#include "physics/CosmicMuonSpectrum.hh"
+#include "Randomize.hh"
 #include "physics/PairDecay.hh"
 #include <cmath>
 #include <iostream>
@@ -99,6 +101,38 @@ void CheckCosmicObservables() {
           "Deposit centroid is not energy weighted");
 }
 
+void CheckCosmicSourceDistribution() {
+  const Configuration config(std::string(PROJECT_PATH) + "/config/cosmic_muons.toml");
+  const CosmicMuonSpectrum spectrum(config);
+  const double rate = 40000 * spectrum.HorizontalFluxPerCm2Second();
+  Require(std::abs(rate / 509.5391648292862 - 1) < 0.0001,
+          "Guan horizontal flux disagrees with independent adaptive quadrature");
+  G4Random::setTheSeed(48271);
+  constexpr int samples = 200000;
+  std::array<int, 5> counts{};
+  for (int sample = 0; sample < samples; ++sample) {
+    const double cosine = spectrum.SampleZenithCosine();
+    const double energy = spectrum.SampleEnergyGeV(cosine);
+    Require(std::isfinite(energy) && energy >= 0.1 && energy <= 100 &&
+                cosine >= std::cos(70 * degree) && cosine <= 1,
+            "Cosmic sample is outside its configured domain");
+    counts[0] += energy < 1;
+    counts[1] += cosine > 0.8;
+    counts[2] += energy < 1 && cosine > 0.8;
+    counts[3] += energy < 1 && cosine < 0.5;
+    counts[4] += energy > 10 && cosine < 0.5;
+  }
+  const std::array<double, 5> probabilities{
+      0.25515029532555866, 0.6079646903776227, 0.17398174897790317,
+      0.0062608900466437035, 0.013848705568873835};
+  for (std::size_t region = 0; region < counts.size(); ++region) {
+    const double expected = probabilities[region];
+    const double tolerance = 6 * std::sqrt(expected * (1 - expected) / samples);
+    Require(std::abs(double(counts[region]) / samples - expected) < tolerance,
+            "Sampled energy-angle population disagrees with integrated Guan flux");
+  }
+}
+
 void CheckTwoBodyMomentum() {
   const double momentum = CalculateTwoBodyMomentum(10, 3, 2);
   Require(std::abs(std::hypot(3, momentum) + std::hypot(2, momentum) - 10) <
@@ -140,6 +174,7 @@ int main() {
     CheckConfiguration();
     CheckDetectorNumbering();
     CheckCosmicObservables();
+    CheckCosmicSourceDistribution();
     CheckTwoBodyMomentum();
     CheckRootSchema();
     std::cout

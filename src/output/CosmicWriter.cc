@@ -45,17 +45,18 @@ void WriteDetectorStep(int eventId, int layer, int arm, const G4Step &step) {
 void WriteArmDeposits(int eventId, const DetectorDeposits &deposits) {
   for (int arm = 0; arm < detector::armCount; ++arm) {
     double totalEnergy = 0;
+    for (int layer = 0; layer < detector::layerCount; ++layer)
+      totalEnergy += deposits[layer][arm].energy;
+    if (totalEnergy == 0)
+      continue;
     double values[detector::layerCount * 4];
     for (int layer = 0; layer < detector::layerCount; ++layer) {
       const auto &deposit = deposits[layer][arm];
-      totalEnergy += deposit.energy;
       values[4 * layer] = deposit.energy / MeV;
       const auto position = deposit.Centroid() / cm;
       for (int axis = 0; axis < 3; ++axis)
         values[4 * layer + 1 + axis] = position[axis];
     }
-    if (totalEnergy == 0)
-      continue;
     const int identifiers[] = {eventId, arm + 1};
     WriteRow(OutputTree::cosmicArms, identifiers, values);
   }

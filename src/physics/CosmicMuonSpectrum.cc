@@ -1,4 +1,6 @@
 #include "physics/CosmicMuonSpectrum.hh"
+#include "G4MuonPlus.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <algorithm>
@@ -6,10 +8,19 @@
 #include <stdexcept>
 
 namespace {
-double EvaluateGaisserFlux(double energyGeV, double cosine) {
-  return 0.14 * std::pow(energyGeV, -2.7) *
-         (1.0 / (1.0 + 1.1 * energyGeV * cosine / 115.0) +
-          0.054 / (1.0 + 1.1 * energyGeV * cosine / 850.0));
+double EffectiveZenithCosine(double cosine) {
+  return std::sqrt((cosine * cosine + 0.102573 * 0.102573 -
+                 0.068287 * std::pow(cosine, 0.958633) +
+                 0.0407253 * std::pow(cosine, 0.817285)) /
+                (1 + 0.102573 * 0.102573 - 0.068287 + 0.0407253));
+}
+
+double EvaluateGuanFlux(double totalEnergyGeV, double effectiveCosine,
+                       double energyShiftGeV) {
+  const double correctedEnergyGeV = totalEnergyGeV + energyShiftGeV;
+  return 0.14 * std::pow(correctedEnergyGeV, -2.7) *
+         (1 / (1 + 1.1 * totalEnergyGeV * effectiveCosine / 115) +
+          0.054 / (1 + 1.1 * totalEnergyGeV * effectiveCosine / 850));
 }
 } // namespace
 
@@ -25,11 +36,10 @@ CosmicMuonSpectrum::CosmicMuonSpectrum(const Configuration &config)
       config.Get<double>("source.cosmic_muons.energy.max_gev");
   const auto zenith =
       config.Get<double>("source.cosmic_muons.angular.zenith_max_deg");
-  const auto power = config.Get<double>("source.cosmic_muons.angular.power");
 
   if (energyNodes < 2 || cosineNodes < 2 ||
       !(minEnergy > 0 && maxEnergy > minEnergy && std::isfinite(maxEnergy)) ||
-      !(zenith > 0 && zenith < 90) || !(power > -1 && std::isfinite(power)))
+      !(zenith > 0 && zenith <= 90))
     throw std::invalid_argument(
         "Invalid cosmic energy grid or angular distribution");
   for (int i = 0; i < energyNodes; ++i) {
@@ -40,18 +50,31 @@ CosmicMuonSpectrum::CosmicMuonSpectrum(const Configuration &config)
   for (int j = 0; j < cosineNodes; ++j) {
     const double cosine =
         minimumCosine_ + (1.0 - minimumCosine_) * j / (cosineNodes - 1);
+    cosines_.push_back(cosine);
     spectra_.push_back(BuildSpectrum(cosine));
+    angularSpectrum_.density.push_back(spectra_.back().cumulative.back());
+    const double area = j == 0 ? 0
+                               : (cosines_[j] - cosines_[j - 1]) *
+                                     (angularSpectrum_.density[j] +
+                                      angularSpectrum_.density[j - 1]) /
+                                     2;
+    angularSpectrum_.cumulative.push_back(
+        j == 0 ? 0 : angularSpectrum_.cumulative.back() + area);
   }
 }
 
 CosmicMuonSpectrum::Spectrum
 CosmicMuonSpectrum::BuildSpectrum(double zenithCosine) const {
+  const double effectiveCosine = EffectiveZenithCosine(zenithCosine);
+  const double energyShiftGeV = 3.64 / std::pow(effectiveCosine, 1.29);
+  const double massGeV = G4MuonPlus::Definition()->GetPDGMass() / GeV;
   Spectrum spectrum;
   spectrum.cumulative.push_back(0.0);
   for (std::size_t energyIndex = 0; energyIndex < energies_.size();
        ++energyIndex) {
     spectrum.density.push_back(
-        EvaluateGaisserFlux(energies_[energyIndex], zenithCosine));
+        zenithCosine * EvaluateGuanFlux(energies_[energyIndex] + massGeV,
+                                      effectiveCosine, energyShiftGeV));
     if (energyIndex == 0)
       continue;
     const double intervalWidth =
@@ -82,27 +105,39 @@ CosmicMuonSpectrum::SelectInterpolatedSpectrum(double zenithCosine) const {
   return spectra_[lowerIndex + (chooseUpper ? 1 : 0)];
 }
 
-double
-CosmicMuonSpectrum::InvertCumulativeSpectrum(const Spectrum &spectrum,
-                                             double cumulativeArea) const {
+double CosmicMuonSpectrum::InvertCumulativeSpectrum(
+    const Spectrum &spectrum, double cumulativeArea,
+    const std::vector<double> &nodes) const {
   const auto upperBound = std::upper_bound(
       spectrum.cumulative.begin(), spectrum.cumulative.end(), cumulativeArea);
   const auto interval = std::min(
       static_cast<std::size_t>(upperBound - spectrum.cumulative.begin() - 1),
-      energies_.size() - 2);
-  const double width = energies_[interval + 1] - energies_[interval];
+      nodes.size() - 2);
+  const double width = nodes[interval + 1] - nodes[interval];
   const double startDensity = spectrum.density[interval];
   const double slope = (spectrum.density[interval + 1] - startDensity) / width;
   const double remainingArea = cumulativeArea - spectrum.cumulative[interval];
+  if (remainingArea <= 0)
+    return nodes[interval];
   const double distance =
       2 * remainingArea /
       (startDensity + std::sqrt(std::max(0.0, startDensity * startDensity +
                                                   2 * slope * remainingArea)));
-  return energies_[interval] + std::clamp(distance, 0.0, width);
+  return nodes[interval] + std::clamp(distance, 0.0, width);
 }
 
 double CosmicMuonSpectrum::SampleEnergyGeV(double zenithCosine) const {
   const auto &spectrum = SelectInterpolatedSpectrum(zenithCosine);
-  return InvertCumulativeSpectrum(spectrum,
-                                  G4UniformRand() * spectrum.cumulative.back());
+  return InvertCumulativeSpectrum(
+      spectrum, G4UniformRand() * spectrum.cumulative.back(), energies_);
+}
+
+double CosmicMuonSpectrum::SampleZenithCosine() const {
+  return InvertCumulativeSpectrum(
+      angularSpectrum_, G4UniformRand() * angularSpectrum_.cumulative.back(),
+      cosines_);
+}
+
+double CosmicMuonSpectrum::HorizontalFluxPerCm2Second() const {
+  return twopi * angularSpectrum_.cumulative.back();
 }

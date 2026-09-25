@@ -9,15 +9,11 @@
 
 CosmicMuonSource::CosmicMuonSource(const Configuration &config)
     : spectrum_(config), plane_(config),
-      angularPower_(config.Get<double>("source.cosmic_muons.angular.power")),
       positiveFraction_(
           config.Get<double>("source.cosmic_muons.positive_fraction")) {}
 
 void CosmicMuonSource::Generate(G4Event *event) {
-  const double power = angularPower_ + 1.0;
-  const double lower = std::pow(spectrum_.MinimumZenithCosine(), power);
-  const double cosine =
-      std::pow(lower + (1.0 - lower) * G4UniformRand(), 1.0 / power);
+  const double cosine = spectrum_.SampleZenithCosine();
   const double sine = std::sqrt(std::max(0.0, 1.0 - cosine * cosine));
   const double azimuth = twopi * G4UniformRand();
   if (G4UniformRand() < positiveFraction_)

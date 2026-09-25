@@ -17,7 +17,7 @@ CosmicReadout::CosmicReadout(const Configuration &config)
 void CosmicReadout::Reset() { deposits_ = {}; }
 
 std::optional<detector::SensitiveDetectorAddress>
-CosmicReadout::RecordDeposit(const G4Step &step) {
+CosmicReadout::RecordDeposit(const G4Step &step, detector::Layer layer) {
   if (step.GetTrack()->GetDefinition() == G4OpticalPhoton::Definition())
     return std::nullopt;
   const double energy = step.GetTotalEnergyDeposit();
@@ -25,10 +25,6 @@ CosmicReadout::RecordDeposit(const G4Step &step) {
     return std::nullopt;
   const auto &touchable = step.GetPreStepPoint()->GetTouchableHandle();
   if (!touchable->GetVolume())
-    return std::nullopt;
-  const auto layer = detector::FindSensitiveLayer(
-      touchable->GetVolume()->GetLogicalVolume()->GetName());
-  if (layer == detector::outside)
     return std::nullopt;
   const auto position = (step.GetPreStepPoint()->GetPosition() +
                          step.GetPostStepPoint()->GetPosition()) /

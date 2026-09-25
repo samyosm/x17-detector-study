@@ -13,7 +13,6 @@ public:
 private:
   CosmicMuonSpectrum spectrum_;
   CosmicSourcePlane plane_;
-  double angularPower_;
   double positiveFraction_;
   G4ParticleGun gun_{1};
 };

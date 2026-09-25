@@ -45,7 +45,7 @@ void PrepareBatchOutput(const Configuration &config) {
   std::filesystem::create_directories(directory);
 }
 
-void PrepareRunFiles(const Configuration &config, int runId) {
+void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz) {
   const auto outputFile = RunOutputFile(config, runId).string();
   const auto parent = std::filesystem::path(outputFile).parent_path();
   if (!parent.empty())
@@ -73,6 +73,11 @@ void PrepareRunFiles(const Configuration &config, int runId) {
            << "\nCheckpoint events: " << requested
            << "\nFirst event ID: " << offset
            << "\nThreads: " << config.Get<int>("runtime.threads") << '\n';
+  manifest << "Source model: Guan et al. 2015, arXiv:1509.06176, equations 2-3\n"
+           << "Source energy: kinetic bounds; flux evaluated at total energy\n"
+           << "Source angular measure: horizontal projected area, uniform azimuth\n"
+           << "Source rate Hz: " << std::setprecision(17)
+           << cosmicRateHz << '\n';
   manifest.close();
   if (!manifest)
     throw std::runtime_error("Could not write run manifest: " + outputFile);

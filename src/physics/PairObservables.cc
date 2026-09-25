@@ -9,13 +9,6 @@
 
 PairObservables CalculatePrimaryPairObservables(const G4Event &event) {
   PairObservables result;
-  const double missing = std::numeric_limits<double>::quiet_NaN();
-
-  result.massMeV = result.openingAngleDegrees = missing;
-  result.positronEnergyMeV = result.electronEnergyMeV = missing;
-  result.positronMomentumMeV.fill(missing);
-  result.electronMomentumMeV.fill(missing);
-
   const G4PrimaryParticle *positron = nullptr;
   const G4PrimaryParticle *electron = nullptr;
 

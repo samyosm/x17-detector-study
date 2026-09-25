@@ -3,6 +3,7 @@
 #include "G4UserRunAction.hh"
 
 #include "configuration/Configuration.hh"
+#include <optional>
 
 class RunAction final : public G4UserRunAction {
 public:
@@ -12,4 +13,5 @@ public:
 
 private:
     Configuration config_;
+    std::optional<double> cosmicRateHz_;
 };

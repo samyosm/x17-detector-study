@@ -11,16 +11,18 @@ enum class OutputTree {
 
 class RootRow {
 public:
-  explicit RootRow(OutputTree tree) : tree_(static_cast<int>(tree)) {}
+  explicit RootRow(OutputTree tree)
+      : output_(G4AnalysisManager::Instance()), tree_(static_cast<int>(tree)) {}
   void Add(int value) {
-    G4AnalysisManager::Instance()->FillNtupleIColumn(tree_, column_++, value);
+    output_->FillNtupleIColumn(tree_, column_++, value);
   }
   void Add(double value) {
-    G4AnalysisManager::Instance()->FillNtupleDColumn(tree_, column_++, value);
+    output_->FillNtupleDColumn(tree_, column_++, value);
   }
-  void Finish() { G4AnalysisManager::Instance()->AddNtupleRow(tree_); }
+  void Finish() { output_->AddNtupleRow(tree_); }
 
 private:
+  G4AnalysisManager *output_;
   int tree_;
   int column_ = 0;
 };

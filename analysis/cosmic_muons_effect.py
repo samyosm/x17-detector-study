@@ -82,7 +82,19 @@ def _(ET, Path, configured_file, input_file, mo, pd, project_directory, tomllib,
     generated_count = len(events)
     mo.stop(generated_count == 0, mo.md("The cosmic event tree is empty. Select a completed run."))
     mo.stop(events["event_id"].duplicated().any(), mo.md("Event IDs are duplicated; select one run."))
-    return arm_count, data_path, events, generated_count, run_config
+    _manifest_path = Path(str(data_path) + ".run.txt")
+    _manifest = _manifest_path.read_text() if _manifest_path.is_file() else ""
+    _rate_lines = [line for line in _manifest.splitlines() if line.startswith("Source rate Hz:")]
+    mo.stop(
+        not _rate_lines and "power" not in run_config["source"]["cosmic_muons"]["angular"],
+        mo.md("Keep the Guan run's `.root.run.txt` sidecar beside the ROOT file for exposure normalization."),
+    )
+    incident_rate_hz = float(_rate_lines[0].split(":", 1)[1]) if _rate_lines else 700.0
+    rate_description = (
+        "Guan model integrated over the saved generation domain and horizontal plane"
+        if _rate_lines else "legacy assumption from the Atomki-background study"
+    )
+    return arm_count, data_path, events, generated_count, incident_rate_hz, rate_description, run_config
 
 
 @app.cell(hide_code=True)
@@ -416,8 +428,8 @@ def _(angle_edges, angular_bin_width, draw_counts, mo, pairs, plt, select_window
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
+def _(incident_rate_hz, mo, rate_description):
+    mo.md(rf"""
     ## From selected counts to an exposure estimate
 
     If n of N incident muons pass a selection, its estimated efficiency is n / N.
@@ -428,11 +440,11 @@ def _(mo):
     or detector model.
 
     To estimate an experimental yield, multiply the efficiency by the expected
-    number of incident muons. Adopting the study's assumed rate of **700 muons/s**
-    for **300 hours** gives 756 million incident muons. Each simulated event
-    therefore carries a weight of 756 million / N in the exposure-scaled plots.
+    number of incident muons. The rate is **{incident_rate_hz:.2f} muons/s**:
+    {rate_description}. For **300 hours**, each simulated event carries a weight
+    of this rate times 300 hours, divided by N.
 
-    This rate is an external assumption, not a measurement of our setup.
+    This is a source-model estimate, not a measurement of our setup.
     Scaling the sample changes its predicted yield but does not improve its
     statistical precision.
     """)
@@ -440,8 +452,8 @@ def _(mo):
 
 
 @app.cell
-def _(generated_count, np, pairs, pd, select_window, two_arm_events, windows):
-    assumed_incident_count = 700 * 300 * 3600
+def _(generated_count, incident_rate_hz, np, pairs, pd, select_window, two_arm_events, windows):
+    assumed_incident_count = incident_rate_hz * 300 * 3600
     exposure_weight = assumed_incident_count / generated_count
     _selections = [("Exactly two arms", len(two_arm_events)), ("Finite two-arm observables", len(pairs))]
     for _name, _bounds in windows.items():
@@ -459,7 +471,7 @@ def _(generated_count, np, pairs, pd, select_window, two_arm_events, windows):
         _rows.append({
             "Selection": _label, "Events": _count, "Efficiency": _efficiency,
             "95% lower": max(0, _centre - _half_width), "95% upper": min(1, _centre + _half_width),
-            "Expected at 700 Hz, 300 h": _count * exposure_weight,
+            "Expected in 300 h": _count * exposure_weight,
         })
     yield_table = pd.DataFrame(_rows)
     return exposure_weight, yield_table
@@ -493,7 +505,7 @@ def _(mo):
 
 
 @app.cell
-def _(angle_edges, angular_bin_width, energy_edges, exposure_weight, mo, np, pairs, plt, select_window, windows):
+def _(angle_edges, angular_bin_width, energy_edges, exposure_weight, incident_rate_hz, mo, np, pairs, plt, select_window, windows):
     _figure, _axes = plt.subplots(3, 1, figsize=(8, 9), layout="constrained")
     _samples = [(pairs["energy_sum_MeV"], energy_edges, "Two-arm cosmic energy", "Summed scintillator energy [MeV]", "1 MeV")]
     for _name in ["Be signal", "Be background"]:
@@ -505,7 +517,7 @@ def _(angle_edges, angular_bin_width, energy_edges, exposure_weight, mo, np, pai
         _centres = (_edges[:-1] + _edges[1:]) / 2
         _axis.errorbar(_centres, _counts * exposure_weight, yerr=np.sqrt(_counts) * exposure_weight,
                       fmt="none", color="tab:red", alpha=0.5)
-        _axis.set(title=f"{_title} — assumed 700 Hz, 300 h", xlabel=_xlabel,
+        _axis.set(title=f"{_title} — {incident_rate_hz:.2f} Hz, 300 h", xlabel=_xlabel,
                   ylabel=f"Expected events / {_bin_label}")
     mo.as_html(_figure)
     return

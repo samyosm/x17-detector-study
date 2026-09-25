@@ -30,9 +30,9 @@ EventAction::EventAction(const PrimaryGeneratorAction* source, int progressInter
 
 EventAction::~EventAction() = default;
 
-void EventAction::RecordSensitiveEnergyDeposit(const G4Step* step) {
+void EventAction::RecordSensitiveEnergyDeposit(const G4Step* step, detector::Layer layer) {
     if (!cosmic_) return;
-    const auto address = cosmic_->RecordDeposit(*step);
+    const auto address = cosmic_->RecordDeposit(*step, layer);
     if (recordSteps_ && address)
         WriteDetectorStep(readout_.eventId, address->layer, address->armIndex, *step);
 }
@@ -58,7 +58,9 @@ void EventAction::RecordDetectedPhoton(int channel, double time, double energy) 
 }
 
 void EventAction::EndOfEventAction(const G4Event* event) {
-    WriteEvent(readout_, source_->GetModeId(), CalculatePrimaryPairObservables(*event));
+    const int mode = source_->GetModeId();
+    WriteEvent(readout_, mode, mode == 3 ? PairObservables{}
+                                       : CalculatePrimaryPairObservables(*event));
     if (cosmic_) {
         WriteArmDeposits(readout_.eventId, cosmic_->Deposits());
         WriteCosmicEvent(readout_.eventId, *event, CalculateCosmicObservables(cosmic_->Deposits(), cosmic_->Thresholds()));

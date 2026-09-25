@@ -13,7 +13,7 @@ public:
     EventAction(const PrimaryGeneratorAction* source, int progressInterval,
                 const Configuration* cosmic = nullptr, int checkpointEvents = 0);
     ~EventAction() override;
-    void RecordSensitiveEnergyDeposit(const G4Step* step);
+    void RecordSensitiveEnergyDeposit(const G4Step* step, detector::Layer layer);
     void BeginOfEventAction(const G4Event* event) override;
     void EndOfEventAction(const G4Event* event) override;
     void RecordScintillatorEnergy(int bar, double energy);
