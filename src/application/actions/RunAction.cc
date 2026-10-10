@@ -1,7 +1,9 @@
 #include "application/actions/RunAction.hh"
 #include "output/RootOutput.hh"
 #include "output/RunFiles.hh"
+#include "geometry/CosmicSourcePlane.hh"
 #include "physics/CosmicMuonSpectrum.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "G4AnalysisManager.hh"
 
@@ -15,9 +17,10 @@ RunAction::RunAction(const Configuration& config)
 
 void RunAction::BeginOfRunAction(const G4Run* run) {
     if (IsMaster()) {
-        if (!cosmicRateHz_ && config_.Get<bool>("source.cosmic_muons.enable", false)) {
-            const double sideCm = config_.Get<double>("source.cosmic_muons.plane.side_cm");
-            cosmicRateHz_ = sideCm * sideCm *
+        if (!cosmicRateHz_ && config_.Get<bool>("source.cosmic_muons.enable", false) &&
+            !UsesB4Model(config_)) {
+            const CosmicSourcePlane plane(config_);
+            cosmicRateHz_ = plane.lengthX / cm * plane.lengthZ / cm *
                 CosmicMuonSpectrum(config_).HorizontalFluxPerCm2Second();
         }
         PrepareRunFiles(config_, run->GetRunID(), cosmicRateHz_.value_or(0));

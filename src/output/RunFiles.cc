@@ -1,4 +1,5 @@
 #include "output/RunFiles.hh"
+#include "physics/MuonModel.hh"
 #include "G4Version.hh"
 #include "Randomize.hh"
 #include <algorithm>
@@ -73,11 +74,15 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
            << "\nCheckpoint events: " << requested
            << "\nFirst event ID: " << offset
            << "\nThreads: " << config.Get<int>("runtime.threads") << '\n';
-  manifest << "Source model: Guan et al. 2015, arXiv:1509.06176, equations 2-3\n"
-           << "Source energy: kinetic bounds; flux evaluated at total energy\n"
-           << "Source angular measure: horizontal projected area, uniform azimuth\n"
-           << "Source rate Hz: " << std::setprecision(17)
-           << cosmicRateHz << '\n';
+  if (UsesB4Model(config))
+    manifest << "Source model: B4PrimaryGeneratorAction cosmic branch, unnormalized\n"
+             << "Source energy: kinetic, sampled linearly between bounds\n";
+  else
+    manifest << "Source model: Guan et al. 2015, arXiv:1509.06176, equations 2-3\n"
+             << "Source energy: kinetic bounds; flux evaluated at total energy\n"
+             << "Source angular measure: horizontal projected area, uniform azimuth\n"
+             << "Source rate Hz: " << std::setprecision(17)
+             << cosmicRateHz << '\n';
   manifest.close();
   if (!manifest)
     throw std::runtime_error("Could not write run manifest: " + outputFile);

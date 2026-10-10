@@ -1,10 +1,12 @@
 #pragma once
 #include "configuration/Configuration.hh"
+#include "physics/MuonModel.hh"
 #include <vector>
 
-class CosmicMuonSpectrum {
+class CosmicMuonSpectrum final : public MuonModel {
 public:
   explicit CosmicMuonSpectrum(const Configuration &config);
+  MuonSample Sample() const override;
   double SampleEnergyGeV(double zenithCosine) const;
   double SampleZenithCosine() const;
   double HorizontalFluxPerCm2Second() const;

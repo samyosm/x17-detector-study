@@ -6,7 +6,8 @@
 class G4VSolid;
 
 struct CosmicSourcePlane {
-  double sideLength;
+  double lengthX;
+  double lengthZ;
   double height;
   explicit CosmicSourcePlane(const Configuration &config);
   std::array<G4ThreeVector, 4> Corners() const;

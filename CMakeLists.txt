@@ -22,6 +22,7 @@ add_library(detector_core STATIC
     src/output/RootSchema.cc
     src/output/RunFiles.cc
     src/output/MergeRunFiles.cc
+    src/physics/B4MuonModel.cc
     src/physics/CosmicMuonSpectrum.cc
     src/physics/CosmicObservables.cc
     src/physics/OpticalMaterials.cc

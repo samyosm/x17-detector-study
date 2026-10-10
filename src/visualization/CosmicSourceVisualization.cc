@@ -4,9 +4,9 @@
 #include "G4VisAttributes.hh"
 
 G4VisExtent CosmicSourceVisualization::Extent() const {
-  const auto halfSide = plane_.sideLength / 2;
-  return {-halfSide,     halfSide,  plane_.height,
-          plane_.height, -halfSide, halfSide};
+  const auto halfX = plane_.lengthX / 2, halfZ = plane_.lengthZ / 2;
+  return {-halfX,        halfX,  plane_.height,
+          plane_.height, -halfZ, halfZ};
 }
 
 void CosmicSourceVisualization::Draw() {

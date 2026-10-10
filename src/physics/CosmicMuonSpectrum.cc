@@ -138,6 +138,11 @@ double CosmicMuonSpectrum::SampleZenithCosine() const {
       cosines_);
 }
 
+MuonSample CosmicMuonSpectrum::Sample() const {
+  const double cosine = SampleZenithCosine();
+  return {cosine, SampleEnergyGeV(cosine)};
+}
+
 double CosmicMuonSpectrum::HorizontalFluxPerCm2Second() const {
   return twopi * angularSpectrum_.cumulative.back();
 }
