@@ -13,11 +13,7 @@ void ActionInitialization::Build() const {
   SetUserAction(new RunAction(config_));
   auto *source = new PrimaryGeneratorAction(config_);
   SetUserAction(source);
-  auto *eventAction = new EventAction(
-      source, config_.Get<int>("runtime.progress_interval"),
-      config_.Get<bool>("source.cosmic_muons.enable", false) ? &config_
-                                                             : nullptr,
-      UsesCheckpoints(config_) ? CheckpointEventCount(config_) : 0);
+  auto *eventAction = new EventAction(source, config_);
   SetUserAction(eventAction);
   const auto efficiency =
       config_.Get<bool>("optics.enable", false)

@@ -1,6 +1,9 @@
 #include "application/actions/EventAction.hh"
 #include "application/actions/PrimaryGeneratorAction.hh"
+#include "output/RunFiles.hh"
+#include "readout/BarHitReadout.hh"
 #include "readout/CosmicReadout.hh"
+#include "readout/EventClock.hh"
 #include "output/RootOutput.hh"
 #include "output/CosmicWriter.hh"
 #include "physics/CosmicObservables.hh"
@@ -22,15 +25,28 @@ void ReportProgress(int interval) {
 }
 }
 
-EventAction::EventAction(const PrimaryGeneratorAction* source, int progressInterval,
-                         const Configuration* cosmic, int checkpointEvents)
-    : cosmic_(cosmic ? std::make_unique<CosmicReadout>(*cosmic) : nullptr),
-      source_(source), progressInterval_(progressInterval), checkpointEvents_(checkpointEvents),
-      recordSteps_(cosmic && cosmic->Get<bool>("readout.record_steps")) {}
+EventAction::EventAction(const PrimaryGeneratorAction* source, const Configuration& config)
+    : source_(source), progressInterval_(config.Get<int>("runtime.progress_interval")),
+      checkpointEvents_(UsesCheckpoints(config) ? CheckpointEventCount(config) : 0) {
+    const bool cosmic = config.Get<bool>("source.cosmic_muons.enable", false);
+    if (cosmic) cosmic_ = std::make_unique<CosmicReadout>(config);
+    recordSteps_ = cosmic && config.Get<bool>("readout.record_steps");
+    if (config.Get<bool>("readout.raw_hits.enable", false)) {
+        barHits_ = std::make_unique<BarHitReadout>(config);
+        clock_ = std::make_unique<EventClock>();
+    }
+}
+
+void EventAction::TrackStep(const G4Step* step) {
+    if (clock_) clock_->RegisterSecondaries(*step);
+}
 
 EventAction::~EventAction() = default;
 
 void EventAction::RecordSensitiveEnergyDeposit(const G4Step* step, detector::Layer layer) {
+    if (barHits_ && layer == detector::scintillator)
+        barHits_->RecordDeposit(*step, step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+                                clock_->StepTime(*step));
     if (!cosmic_) return;
     const auto address = cosmic_->RecordDeposit(*step, layer);
     if (recordSteps_ && address)
@@ -41,6 +57,10 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     const int offset = checkpointEvents_ * G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
     readout_ = EventReadout(offset + event->GetEventID());
     if (cosmic_) cosmic_->Reset();
+    if (barHits_) {
+        barHits_->Reset();
+        clock_->Reset();
+    }
 }
 
 void EventAction::RecordScintillatorEnergy(int bar, double energy) {
@@ -64,6 +84,10 @@ void EventAction::EndOfEventAction(const G4Event* event) {
     if (cosmic_) {
         WriteArmDeposits(readout_.eventId, cosmic_->Deposits());
         WriteCosmicEvent(readout_.eventId, *event, CalculateCosmicObservables(cosmic_->Deposits(), cosmic_->Thresholds()));
+    }
+    if (barHits_) {
+        for (const auto& hit : barHits_->Hits()) WriteRawHit(readout_.eventId, hit);
+        WriteTruth(readout_.eventId, source_->GetLabId(), *event);
     }
     ReportProgress(progressInterval_);
 }

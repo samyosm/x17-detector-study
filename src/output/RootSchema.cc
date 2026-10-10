@@ -47,6 +47,29 @@ void DefineCosmicStepTree() {
   output->FinishNtuple();
 }
 
+void DefineRawHitTree() {
+  auto *output = G4AnalysisManager::Instance();
+  output->CreateNtuple("raw_hits",
+                       "Bar hits before detector response; deposits within the "
+                       "hit window are merged; z along the bar");
+  for (auto name : {"event_id", "bar"})
+    output->CreateNtupleIColumn(name);
+  for (auto name : {"edep_MeV", "z_cm", "time_ns"})
+    output->CreateNtupleDColumn(name);
+  output->FinishNtuple();
+}
+
+void DefineTruthTree() {
+  auto *output = G4AnalysisManager::Instance();
+  output->CreateNtuple("truth",
+                       "Per event source identity (lab ID, 0 for muons) and primary");
+  for (auto name : {"event_id", "source_id"})
+    output->CreateNtupleIColumn(name);
+  for (auto name : {"vertex_x_cm", "vertex_y_cm", "vertex_z_cm", "primary_kinetic_MeV"})
+    output->CreateNtupleDColumn(name);
+  output->FinishNtuple();
+}
+
 void DefineEventTree() {
   auto *output = G4AnalysisManager::Instance();
   output->CreateNtuple("events",
@@ -104,4 +127,6 @@ void DefineRootTrees() {
   DefineCosmicArmTree();
   DefineCosmicEventTree();
   DefineCosmicStepTree();
+  DefineRawHitTree();
+  DefineTruthTree();
 }

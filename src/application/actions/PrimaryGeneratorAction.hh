@@ -12,6 +12,7 @@ public:
   ~PrimaryGeneratorAction() override;
   void GeneratePrimaries(G4Event *event) override;
   int GetModeId() const { return source_->ModeId(); }
+  int GetLabId() const { return source_->LabId(); }
 
 private:
   std::unique_ptr<PrimarySource> source_;

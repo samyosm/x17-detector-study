@@ -1,0 +1,60 @@
+[runtime]
+mode = "batch"
+threads = 20
+events = 20_000_000
+checkpoint_events = 100_000
+progress_interval = 100000
+output_directory = "data/simulations"
+random_seed = 1729
+
+[visualization]
+macro = "../macros/figures/whole.mac"
+
+[sources.301]
+name = "Cs-137"
+activity_uci = 10.3
+reference_date = "01-12-1972"
+
+[sources.312]
+name = "Cs-137"
+activity_uci = 100.0
+reference_date = "1972-10-01"
+
+[placement]
+min_cm = [0.0, -30.0, -70.0]
+max_cm = [0.0, -30.0, 70.0]
+
+[source.cosmic_muons]
+model = "guan"
+positive_fraction = 0.5
+
+[source.cosmic_muons.plane]
+side_cm = 200.0
+height_cm = 60.0
+
+[source.cosmic_muons.angular]
+zenith_max_deg = 70.0
+nodes = 128
+
+[source.cosmic_muons.energy]
+min_gev = 0.1
+max_gev = 100.0
+nodes = 2048
+
+[optics]
+enable = false
+
+[readout]
+record_steps = false
+
+[readout.raw_hits]
+enable = true
+window_ns = 10.0
+
+[readout.thresholds]
+mwpc_mev = 0.001
+delta_e_mev = 0.05
+scintillator_mev = 0.1
+
+[geometry]
+file = "../geometry/world.gdml"

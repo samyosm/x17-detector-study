@@ -1,6 +1,7 @@
 #pragma once
 #include "configuration/Configuration.hh"
 
+bool KeepsRunRecords(const Configuration &config);
 int CheckpointEventCount(const Configuration &config);
 bool UsesCheckpoints(const Configuration &config);
 std::filesystem::path RunOutputFile(const Configuration &config, int runId);

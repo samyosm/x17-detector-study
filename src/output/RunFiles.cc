@@ -1,4 +1,5 @@
 #include "output/RunFiles.hh"
+#include "output/SimulationRecord.hh"
 #include "physics/MuonModel.hh"
 #include "G4Version.hh"
 #include "Randomize.hh"
@@ -7,6 +8,11 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+
+bool KeepsRunRecords(const Configuration &config) {
+  return config.Get<bool>("source.cosmic_muons.enable", false) ||
+         config.Get<bool>("source.lab.enable", false);
+}
 
 int CheckpointEventCount(const Configuration &config) {
   const auto count = config.Get<int>("runtime.checkpoint_events", 1000000);
@@ -54,7 +60,7 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
   if (std::filesystem::exists(outputFile) ||
       std::filesystem::exists(PendingRunOutputFile(config, runId)))
     throw std::runtime_error("Output already exists: " + outputFile);
-  if (!config.Get<bool>("source.cosmic_muons.enable", false))
+  if (!KeepsRunRecords(config))
     return;
   std::filesystem::copy_file(config.File(), outputFile + ".toml",
                              std::filesystem::copy_options::overwrite_existing);
@@ -66,7 +72,9 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
       : config.Get<int>("runtime.events");
   std::ofstream manifest(outputFile + ".run.txt");
   manifest << G4Version
-           << "\nPhysics: FTFP_BERT + G4EmStandardPhysics_option3\n"
+           << "\nPhysics: FTFP_BERT + G4EmStandardPhysics_option3"
+           << (config.Get<bool>("source.lab.enable", false) ? " + G4RadioactiveDecayPhysics" : "")
+           << '\n'
            << "Optical physics: " << config.Get<bool>("optics.enable", false)
            << "\nSeed: " << config.Get<long>("runtime.random_seed")
            << "\nRandom engine: " << G4Random::getTheEngine()->name()
@@ -74,10 +82,11 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
            << "\nCheckpoint events: " << requested
            << "\nFirst event ID: " << offset
            << "\nThreads: " << config.Get<int>("runtime.threads") << '\n';
-  if (UsesB4Model(config))
+  const bool lab = config.Get<bool>("source.lab.enable", false);
+  if (!lab && UsesB4Model(config))
     manifest << "Source model: B4PrimaryGeneratorAction cosmic branch, unnormalized\n"
              << "Source energy: kinetic, sampled linearly between bounds\n";
-  else
+  else if (!lab)
     manifest << "Source model: Guan et al. 2015, arXiv:1509.06176, equations 2-3\n"
              << "Source energy: kinetic bounds; flux evaluated at total energy\n"
              << "Source angular measure: horizontal projected area, uniform azimuth\n"
@@ -86,6 +95,8 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
   manifest.close();
   if (!manifest)
     throw std::runtime_error("Could not write run manifest: " + outputFile);
+  if (config.Get<bool>("readout.raw_hits.enable", false))
+    WriteSimulationRecord(config, outputFile + ".simulation.toml", cosmicRateHz);
 }
 
 void CompleteRunFile(const Configuration &config, int runId) {

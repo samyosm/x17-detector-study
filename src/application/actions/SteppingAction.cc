@@ -25,6 +25,7 @@ detector::Layer SteppingAction::FindLayer(const G4LogicalVolume* volume) const {
 }
 
 void SteppingAction::UserSteppingAction(const G4Step* step) {
+    eventAction_->TrackStep(step);
     const auto& touchable = step->GetPreStepPoint()->GetTouchableHandle();
     const auto* volume = touchable->GetVolume();
     if (!volume) return;

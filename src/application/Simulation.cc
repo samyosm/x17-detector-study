@@ -32,7 +32,7 @@ void RunBatch(G4RunManager &manager, const Configuration &config) {
 }
 
 void RunSimulation(const Configuration &config) {
-  if (config.Get<bool>("source.cosmic_muons.enable", false))
+  if (KeepsRunRecords(config))
     G4Random::setTheSeed(config.Get<long>("runtime.random_seed"));
   if (config.Get<int>("runtime.events") <= 0)
     throw std::runtime_error("runtime.events must be positive");

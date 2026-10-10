@@ -3,6 +3,7 @@
 #include "physics/sources/CosmicMuonSource.hh"
 #include "physics/sources/GunSource.hh"
 #include "physics/sources/IpcSource.hh"
+#include "physics/sources/LabSource.hh"
 #include "physics/sources/MixedSource.hh"
 #include "physics/sources/X17Source.hh"
 
@@ -12,14 +13,17 @@
 std::unique_ptr<PrimarySource>
 CreatePrimarySource(const Configuration &settings) {
   const bool cosmic = settings.Get<bool>("source.cosmic_muons.enable", false);
+  const bool lab = settings.Get<bool>("source.lab.enable", false);
   const bool gun = settings.Get<bool>("source.gun.enable", false);
   const bool ipc = settings.Get<bool>("source.ipc.enable", false);
   const bool x17 = settings.Get<bool>("source.x17.enable", false);
-  if (int(cosmic) + int(gun) + int(ipc || x17) != 1)
+  if (int(cosmic) + int(lab) + int(gun) + int(ipc || x17) != 1)
     throw std::invalid_argument(
-        "Enable gun, cosmic_muons, or IPC/X17 (IPC and X17 may mix)");
+        "Enable gun, cosmic_muons, lab, or IPC/X17 (IPC and X17 may mix)");
   if (cosmic)
     return std::make_unique<CosmicMuonSource>(settings);
+  if (lab)
+    return std::make_unique<LabSource>(settings);
   if (gun)
     return std::make_unique<GunSource>(settings);
   const double energy =

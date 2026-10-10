@@ -6,7 +6,9 @@ enum class OutputTree {
   photonHits,
   cosmicArms,
   cosmicEvents,
-  cosmicSteps
+  cosmicSteps,
+  rawHits,
+  truth
 };
 
 class RootRow {

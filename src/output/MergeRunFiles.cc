@@ -46,10 +46,11 @@ void MergeCompletedRun(const Configuration &config) {
   for (int run = 0; run < count; ++run)
     files.push_back(RunOutputFile(config, run).string());
   MergeRootFiles(files, temporary);
-  if (config.Get<bool>("source.cosmic_muons.enable", false)) {
-    for (const auto *extension : {".toml", ".gdml", ".run.txt"})
-      std::filesystem::copy_file(files.front() + extension, output.string() + extension,
-                                std::filesystem::copy_options::overwrite_existing);
+  if (KeepsRunRecords(config)) {
+    for (const auto *extension : {".toml", ".gdml", ".run.txt", ".simulation.toml"})
+      if (std::filesystem::exists(files.front() + extension))
+        std::filesystem::copy_file(files.front() + extension, output.string() + extension,
+                                   std::filesystem::copy_options::overwrite_existing);
     std::ofstream manifest(output.string() + ".run.txt", std::ios::app);
     manifest << "Merged checkpoints: " << count << "\nCompleted events: " << events << '\n';
     manifest.close();

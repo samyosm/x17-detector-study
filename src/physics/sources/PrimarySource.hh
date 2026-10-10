@@ -7,4 +7,5 @@ public:
   virtual ~PrimarySource() = default;
   virtual void Generate(G4Event *event) = 0;
   virtual int ModeId() const = 0;
+  virtual int LabId() const { return 0; }
 };

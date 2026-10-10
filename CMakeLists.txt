@@ -7,6 +7,7 @@ find_program(ROOT_HADD_EXECUTABLE hadd REQUIRED)
 
 add_library(detector_core STATIC
     src/application/Simulation.cc
+    src/application/SourceSelection.cc
     src/application/UiCommand.cc
     src/application/actions/ActionInitialization.cc
     src/application/actions/EventAction.cc
@@ -22,9 +23,12 @@ add_library(detector_core STATIC
     src/output/RootSchema.cc
     src/output/RunFiles.cc
     src/output/MergeRunFiles.cc
+    src/output/RawHitWriter.cc
+    src/output/SimulationRecord.cc
     src/physics/B4MuonModel.cc
     src/physics/CosmicMuonSpectrum.cc
     src/physics/CosmicObservables.cc
+    src/physics/LabSourceDefinition.cc
     src/physics/OpticalMaterials.cc
     src/physics/PairDecay.cc
     src/physics/PairObservables.cc
@@ -32,11 +36,14 @@ add_library(detector_core STATIC
     src/physics/sources/CosmicMuonSource.cc
     src/physics/sources/GunSource.cc
     src/physics/sources/IpcSource.cc
+    src/physics/sources/LabSource.cc
     src/physics/sources/MixedSource.cc
     src/physics/sources/PairSource.cc
     src/physics/sources/SourceFactory.cc
     src/physics/sources/X17Source.cc
+    src/readout/BarHitReadout.cc
     src/readout/CosmicReadout.cc
+    src/readout/EventClock.cc
     src/readout/OpticalSensor.cc
     src/visualization/CosmicSourceVisualization.cc
     src/visualization/DetectorStyle.cc

@@ -7,6 +7,7 @@
 #include "output/RootOutput.hh"
 #include "physics/CosmicObservables.hh"
 #include "physics/CosmicMuonSpectrum.hh"
+#include "physics/LabSourceDefinition.hh"
 #include "Randomize.hh"
 #include "physics/PairDecay.hh"
 #include <cmath>
@@ -47,6 +48,18 @@ void CheckConfiguration() {
                 std::abs(corner.z()) == 100 * cm,
             "Source plane dimensions changed");
   }
+}
+
+void CheckLabSources() {
+  Require(std::abs(DecayCorrectedActivity(100, 10, 20) - 25) < 1e-12,
+          "Decay correction changed");
+  Require(SecondsBetweenDates("01-12-1972", "1972-12-02") == 86400,
+          "Date formats disagree");
+  Configuration config(std::string(PROJECT_PATH) + "/config/lab_sources.toml");
+  config.Set("source.lab.id", 301);
+  Require(config.Get<int>("source.lab.id") == 301, "Configuration Set failed");
+  Require(config.Get<std::string>("sources.301.name") == "Cs-137",
+          "Lab source registry changed");
 }
 
 void CheckDetectorNumbering() {
@@ -146,10 +159,10 @@ void CheckRootSchema() {
   DefineRootTrees();
   auto *output = G4AnalysisManager::Instance();
   const char *names[] = {"events", "photon_hits", "cosmic_arms",
-                         "cosmic_events", "cosmic_steps"};
-  const std::size_t columns[] = {92, 4, 14, 18, 14};
-  Require(output->GetNofNtuples() == 5, "Output tree count changed");
-  for (int tree = 0; tree < 5; ++tree) {
+                         "cosmic_events", "cosmic_steps", "raw_hits", "truth"};
+  const std::size_t columns[] = {92, 4, 14, 18, 14, 5, 6};
+  Require(output->GetNofNtuples() == 7, "Output tree count changed");
+  for (int tree = 0; tree < 7; ++tree) {
     const auto *booking = output->GetNtuple(tree);
     Require(booking && booking->name() == names[tree],
             "Output tree order changed");
@@ -172,6 +185,7 @@ void CheckRootSchema() {
 int main() {
   try {
     CheckConfiguration();
+    CheckLabSources();
     CheckDetectorNumbering();
     CheckCosmicObservables();
     CheckCosmicSourceDistribution();
