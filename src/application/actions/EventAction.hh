@@ -3,6 +3,7 @@
 #include "configuration/Configuration.hh"
 #include "readout/EventReadout.hh"
 #include <memory>
+#include <vector>
 
 class BarHitReadout;
 class CosmicReadout;
@@ -24,7 +25,15 @@ private:
     std::unique_ptr<CosmicReadout> cosmic_;
     std::unique_ptr<BarHitReadout> barHits_;
     std::unique_ptr<EventClock> clock_;
+    struct DetectedPhoton {
+        int sensor;
+        double time;
+    };
+    std::vector<DetectedPhoton> photons_;
     EventReadout readout_;
+    double adcPerPhotoelectron_ = 1.0;
+    double eventPeriod_ = 0.0;
+    double timeResolution_ = 0.0;
     const PrimaryGeneratorAction* source_;
     int progressInterval_;
     int checkpointEvents_;

@@ -1,6 +1,7 @@
 #include "output/RunFiles.hh"
 #include "output/SimulationRecord.hh"
 #include "physics/MuonModel.hh"
+#include "physics/PhysicsList.hh"
 #include "G4Version.hh"
 #include "Randomize.hh"
 #include <algorithm>
@@ -72,9 +73,7 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
       : config.Get<int>("runtime.events");
   std::ofstream manifest(outputFile + ".run.txt");
   manifest << G4Version
-           << "\nPhysics: FTFP_BERT + G4EmStandardPhysics_option3"
-           << (config.Get<bool>("source.lab.enable", false) ? " + G4RadioactiveDecayPhysics" : "")
-           << '\n'
+           << "\nPhysics: " << DescribePhysics(config) << '\n'
            << "Optical physics: " << config.Get<bool>("optics.enable", false)
            << "\nSeed: " << config.Get<long>("runtime.random_seed")
            << "\nRandom engine: " << G4Random::getTheEngine()->name()

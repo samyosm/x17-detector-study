@@ -1,6 +1,8 @@
 #include "physics/OpticalMaterials.hh"
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4LogicalSkinSurface.hh"
+#include "G4OpticalSurface.hh"
 #include "G4SystemOfUnits.hh"
 #include "configuration/Configuration.hh"
 #include <vector>
@@ -39,4 +41,18 @@ void ConfigureOpticalMaterials(const Configuration &config,
                    {config.Get<double>("optics.air.refractive_index"),
                     config.Get<double>("optics.air.refractive_index")});
   airMaterial.SetMaterialPropertiesTable(air);
+}
+
+void ConfigureScintillatorWrap(const Configuration &config,
+                               G4LogicalVolume &scintillator) {
+  const std::vector<G4double> energies = {
+      config.Get<double>("optics.scintillator.emission_min_ev") * eV,
+      config.Get<double>("optics.scintillator.emission_max_ev") * eV};
+  const double reflectivity = config.Get<double>("optics.wrap.reflectivity");
+  auto *surface = new G4OpticalSurface("ScintillatorWrap", unified, ground,
+                                       dielectric_metal);
+  auto *properties = new G4MaterialPropertiesTable;
+  properties->AddProperty("REFLECTIVITY", energies, {reflectivity, reflectivity});
+  surface->SetMaterialPropertiesTable(properties);
+  new G4LogicalSkinSurface("ScintillatorWrap", &scintillator, surface);
 }

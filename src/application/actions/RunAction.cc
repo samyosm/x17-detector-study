@@ -12,7 +12,7 @@
 
 RunAction::RunAction(const Configuration& config)
     : config_(config) {
-    DefineRootTrees();
+    DefineRootTrees(!config.Get<bool>("readout.raw_hits.enable", false));
 }
 
 void RunAction::BeginOfRunAction(const G4Run* run) {

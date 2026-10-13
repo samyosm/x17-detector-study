@@ -2,7 +2,12 @@
 #include "G4IonTable.hh"
 #include "G4NistManager.hh"
 #include "G4SystemOfUnits.hh"
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <numeric>
+#include <random>
+#include <vector>
 #include <ctime>
 #include <iomanip>
 #include <regex>
@@ -67,6 +72,64 @@ double SecondsBetweenDates(const std::string &from, const std::string &to) {
   return std::difftime(ParseDate(to), ParseDate(from));
 }
 
+double PlannedSourceZ(const PlacementSettings &placement, long seed, int runId, int runCount) {
+  if (!placement.uniformZ)
+    return placement.zFixed;
+  std::vector<int> strata(static_cast<std::size_t>(runCount));
+  std::iota(strata.begin(), strata.end(), 0);
+  std::mt19937_64 order(static_cast<std::uint64_t>(seed));
+  std::shuffle(strata.begin(), strata.end(), order);
+  std::mt19937_64 jitter(static_cast<std::uint64_t>(seed) * 7919 + static_cast<std::uint64_t>(runId) + 1);
+  const double fraction =
+      (strata[static_cast<std::size_t>(runId)] + std::uniform_real_distribution<double>(0, 1)(jitter)) / runCount;
+  return placement.zMinimum + fraction * (placement.zMaximum - placement.zMinimum);
+}
+
+CapsuleSpecification ReadCapsule(const Configuration &config, int labId) {
+  const std::string entry = "capsules." + std::to_string(labId) + ".";
+  CapsuleSpecification capsule;
+  capsule.description = config.Get<std::string>(entry + "description");
+  capsule.bodyMaterial = config.Get<std::string>(entry + "body_material");
+  capsule.cavityMaterial = config.Get<std::string>(entry + "cavity_material");
+  capsule.windowMaterial = config.Get<std::string>(entry + "window_material");
+  capsule.activeMaterial = config.Get<std::string>(entry + "active_material");
+  capsule.bodyRadius = config.Get<double>(entry + "body_radius_mm") * mm;
+  capsule.bodyLength = config.Get<double>(entry + "body_length_mm") * mm;
+  capsule.cavityRadius = config.Get<double>(entry + "cavity_radius_mm") * mm;
+  capsule.cavityDepth = config.Get<double>(entry + "cavity_depth_mm") * mm;
+  capsule.windowThickness = config.Get<double>(entry + "window_thickness_mm") * mm;
+  capsule.activeRadius = config.Get<double>(entry + "active_radius_mm") * mm;
+  capsule.activeThickness = config.Get<double>(entry + "active_thickness_mm") * mm;
+  if (capsule.activeRadius <= 0 || capsule.activeThickness <= 0 ||
+      capsule.windowThickness <= 0 || capsule.activeRadius > capsule.cavityRadius ||
+      capsule.cavityRadius >= capsule.bodyRadius ||
+      capsule.cavityDepth <= capsule.activeThickness ||
+      capsule.bodyLength <= capsule.cavityDepth)
+    throw std::runtime_error("Inconsistent capsule dimensions for source " + std::to_string(labId));
+  return capsule;
+}
+
+PlacementSettings ReadPlacement(const Configuration &config) {
+  PlacementSettings placement;
+  placement.x = config.Get<double>("placement.x_cm") * cm;
+  placement.y = config.Get<double>("placement.y_cm") * cm;
+  const auto mode = config.Get<std::string>("placement.z_mode");
+  if (mode != "uniform" && mode != "fixed")
+    throw std::runtime_error("placement.z_mode must be uniform or fixed");
+  placement.uniformZ = mode == "uniform";
+  placement.zMinimum = config.Get<double>("placement.z_min_cm") * cm;
+  placement.zMaximum = config.Get<double>("placement.z_max_cm") * cm;
+  placement.zFixed = config.Get<double>("placement.z_cm") * cm;
+  if (placement.uniformZ && placement.zMinimum >= placement.zMaximum)
+    throw std::runtime_error("placement.z_min_cm must be below placement.z_max_cm");
+  const auto direction = config.Vector("placement.orientation");
+  placement.orientation = {direction[0], direction[1], direction[2]};
+  if (placement.orientation.mag() == 0)
+    throw std::runtime_error("placement.orientation must not be zero");
+  placement.orientation = placement.orientation.unit();
+  return placement;
+}
+
 LabSourceDefinition ReadLabSource(const Configuration &config) {
   const int id = config.Get<int>("source.lab.id");
   const std::string entry = "sources." + std::to_string(id) + ".";
@@ -74,13 +137,10 @@ LabSourceDefinition ReadLabSource(const Configuration &config) {
   source.labId = id;
   source.name = config.Get<std::string>(entry + "name");
   ParseIsotope(source.name, source.atomicNumber, source.massNumber);
-  const auto minimum = config.Vector("placement.min_cm");
-  const auto maximum = config.Vector("placement.max_cm");
-  for (int axis = 0; axis < 3; ++axis)
-    if (minimum[axis] > maximum[axis])
-      throw std::runtime_error("placement.min_cm must not exceed placement.max_cm");
-  source.placementMinimum = {minimum[0] * cm, minimum[1] * cm, minimum[2] * cm};
-  source.placementMaximum = {maximum[0] * cm, maximum[1] * cm, maximum[2] * cm};
+  source.placement = ReadPlacement(config);
+  source.encapsulated = config.Get<bool>("source.lab.encapsulated", true);
+  if (source.encapsulated)
+    source.capsule = ReadCapsule(config, id);
   source.referenceActivityBq =
       config.Get<double>(entry + "activity_uci") * microcurieInBecquerel;
   source.referenceDate = FormatIsoDate(ParseDate(config.Get<std::string>(entry + "reference_date")));

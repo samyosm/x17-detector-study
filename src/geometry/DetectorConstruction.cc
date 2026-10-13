@@ -1,6 +1,8 @@
 #include "geometry/DetectorConstruction.hh"
 #include "G4NistManager.hh"
+#include "G4SystemOfUnits.hh"
 #include "geometry/CosmicSourcePlane.hh"
+#include "physics/LabSourceDefinition.hh"
 #include "physics/OpticalMaterials.hh"
 #include "visualization/DetectorStyle.hh"
 
@@ -27,11 +29,24 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   if (config_.Get<bool>("source.cosmic_muons.enable", false))
     CosmicSourcePlane(config_).RequireInside(*world->GetSolid());
+  if (config_.Get<bool>("source.lab.enable", false) &&
+      config_.Get<bool>("source.lab.encapsulated", true)) {
+    const auto source = ReadLabSource(config_);
+    capsule_ = std::make_unique<SourceCapsule>(
+        source.capsule, source.placement, *world,
+        config_.Get<double>("physics.capsule_cut_mm") * mm);
+  }
   ApplyReferenceVisualization();
   if (!config_.Get<bool>("optics.enable", false))
     return parser_.GetWorldVolume();
 
   ConfigureOpticalMaterials(config_, *scintillator->GetMaterial(),
                             *world->GetMaterial());
+  ConfigureScintillatorWrap(config_, *scintillator);
   return parser_.GetWorldVolume();
+}
+
+void DetectorConstruction::MoveSourceCapsule(const G4ThreeVector &position) {
+  if (capsule_)
+    capsule_->MoveTo(position);
 }

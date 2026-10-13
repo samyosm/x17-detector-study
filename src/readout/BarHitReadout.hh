@@ -11,6 +11,7 @@ struct BarHit {
   double energy;
   double position;
   double time;
+  double start;
 };
 
 class BarHitReadout {

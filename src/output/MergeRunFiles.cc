@@ -10,26 +10,42 @@
 extern char **environ;
 
 namespace {
-void MergeRootFiles(const std::vector<std::string> &files,
-                    const std::filesystem::path &output) {
-  std::vector<std::string> arguments{ROOT_HADD_EXECUTABLE, "-n", "32", output.string()};
-  arguments.insert(arguments.end(), files.begin(), files.end());
+void RunProcess(const std::string &executable, std::vector<std::string> arguments,
+                const std::string &failure) {
+  arguments.insert(arguments.begin(), executable);
   std::vector<char *> pointers;
   for (auto &argument : arguments)
     pointers.push_back(argument.data());
   pointers.push_back(nullptr);
   pid_t process;
-  if (posix_spawn(&process, ROOT_HADD_EXECUTABLE, nullptr, nullptr,
-                  pointers.data(), environ) != 0)
-    throw std::runtime_error("Could not start ROOT merger; checkpoints retained");
+  if (posix_spawn(&process, executable.c_str(), nullptr, nullptr, pointers.data(), environ) != 0)
+    throw std::runtime_error(failure);
   int status = 0;
   pid_t result;
   do {
     result = waitpid(process, &status, 0);
   } while (result == -1 && errno == EINTR);
   if (result == -1 || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
-    throw std::runtime_error("ROOT merge failed; checkpoints retained");
+    throw std::runtime_error(failure);
 }
+
+void MergeRootFiles(const std::vector<std::string> &files,
+                    const std::filesystem::path &output) {
+  std::vector<std::string> arguments{"-n", "32", output.string()};
+  arguments.insert(arguments.end(), files.begin(), files.end());
+  RunProcess(ROOT_HADD_EXECUTABLE, arguments, "ROOT merge failed; checkpoints retained");
+}
+}
+
+void EmbedRunInfo(const Configuration &config) {
+  const auto output = config.Get<std::string>("runtime.output_file");
+  RunProcess(ROOT_EXECUTABLE,
+             {"-l", "-b", "-q", "-e",
+              "auto file = TFile::Open(\"" + output + "\", \"UPDATE\"); "
+              "std::ifstream input(\"" + output + ".simulation.toml\"); "
+              "std::stringstream text; text << input.rdbuf(); "
+              "TObjString info(text.str().c_str()); info.Write(\"run_info\"); file->Close();"},
+             "Could not embed run information in " + output);
 }
 
 void MergeCompletedRun(const Configuration &config) {

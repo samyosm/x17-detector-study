@@ -1,14 +1,16 @@
 #pragma once
 #include "G4AnalysisManager.hh"
+#include <string>
 
 enum class OutputTree {
+  vf48,
+  truth,
+  hitTruth,
   events,
   photonHits,
   cosmicArms,
   cosmicEvents,
-  cosmicSteps,
-  rawHits,
-  truth
+  cosmicSteps
 };
 
 class RootRow {
@@ -20,6 +22,9 @@ public:
   }
   void Add(double value) {
     output_->FillNtupleDColumn(tree_, column_++, value);
+  }
+  void Add(const std::string &value) {
+    output_->FillNtupleSColumn(tree_, column_++, value);
   }
   void Finish() { output_->AddNtupleRow(tree_); }
 

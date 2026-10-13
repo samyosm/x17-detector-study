@@ -47,14 +47,24 @@ void DefineCosmicStepTree() {
   output->FinishNtuple();
 }
 
-void DefineRawHitTree() {
+void DefineVf48Tree() {
   auto *output = G4AnalysisManager::Instance();
-  output->CreateNtuple("raw_hits",
-                       "Bar hits before detector response; deposits within the "
-                       "hit window are merged; z along the bar");
-  for (auto name : {"event_id", "bar"})
+  output->CreateNtuple("vf48",
+                       "Detector export: one row per PMT of each scintillator hit; "
+                       "the two PMTs of a hit share _time");
+  output->CreateNtupleDColumn("_time");
+  output->CreateNtupleSColumn("_field");
+  output->CreateNtupleIColumn("ADC");
+  output->FinishNtuple();
+}
+
+void DefineHitTruthTree() {
+  auto *output = G4AnalysisManager::Instance();
+  output->CreateNtuple("hit_truth",
+                       "Truth of each scintillator hit; joins vf48 on _time");
+  for (auto name : {"event_id", "hit", "bar"})
     output->CreateNtupleIColumn(name);
-  for (auto name : {"edep_MeV", "z_cm", "time_ns"})
+  for (auto name : {"edep_MeV", "time_ns", "z_cm", "_time"})
     output->CreateNtupleDColumn(name);
   output->FinishNtuple();
 }
@@ -118,15 +128,18 @@ void DefinePhotonHitTree() {
 }
 } // namespace
 
-void DefineRootTrees() {
+void DefineRootTrees(bool legacyTrees) {
   auto *output = G4AnalysisManager::Instance();
   output->SetNtupleMerging(true);
   output->SetNtupleRowWise(false, true);
+  DefineVf48Tree();
+  DefineTruthTree();
+  DefineHitTruthTree();
+  if (!legacyTrees)
+    return;
   DefineEventTree();
   DefinePhotonHitTree();
   DefineCosmicArmTree();
   DefineCosmicEventTree();
   DefineCosmicStepTree();
-  DefineRawHitTree();
-  DefineTruthTree();
 }

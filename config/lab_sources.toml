@@ -2,13 +2,10 @@
 mode = "batch"
 threads = 20
 events = 20_000_000
-checkpoint_events = 100_000
+checkpoint_events = 20_000
 progress_interval = 100000
 output_directory = "data/simulations"
 random_seed = 1729
-
-[visualization]
-macro = "../macros/figures/whole.mac"
 
 [sources.301]
 name = "Cs-137"
@@ -20,9 +17,108 @@ name = "Cs-137"
 activity_uci = 100.0
 reference_date = "1972-10-01"
 
+[sources.308]
+name = "Bi-207"
+activity_uci = 10.2
+reference_date = "1977-09-02"
+
+[sources.319]
+name = "Co-60"
+activity_uci = 8.6
+reference_date = "1966-12-13"
+
+[sources.332]
+name = "Na-22"
+activity_uci = 7.5
+reference_date = "1987-11-23"
+
+[source.lab]
+encapsulated = true
+
 [placement]
-min_cm = [0.0, -30.0, -70.0]
-max_cm = [0.0, -30.0, 70.0]
+x_cm = 0.0
+y_cm = -30.0
+z_mode = "uniform"
+z_min_cm = -70.0
+z_max_cm = 70.0
+z_cm = 0.0
+orientation = [0.0, 1.0, 0.0]
+
+[capsules.301]
+description = "Generic 5 cm x 1 cm disk (assumed for all sources, NOT the real capsule): acrylic body, 0.5 mm acrylic window, small polyethylene active deposit"
+body_material = "G4_PLEXIGLASS"
+cavity_material = "G4_AIR"
+window_material = "G4_PLEXIGLASS"
+active_material = "G4_POLYETHYLENE"
+body_radius_mm = 25.0
+body_length_mm = 9.5
+cavity_radius_mm = 20.0
+cavity_depth_mm = 5.0
+window_thickness_mm = 0.5
+active_radius_mm = 2.5
+active_thickness_mm = 0.1
+
+[capsules.308]
+description = "Generic 5 cm x 1 cm disk (assumed for all sources, NOT the real capsule): acrylic body, 0.5 mm acrylic window, small polyethylene active deposit"
+body_material = "G4_PLEXIGLASS"
+cavity_material = "G4_AIR"
+window_material = "G4_PLEXIGLASS"
+active_material = "G4_POLYETHYLENE"
+body_radius_mm = 25.0
+body_length_mm = 9.5
+cavity_radius_mm = 20.0
+cavity_depth_mm = 5.0
+window_thickness_mm = 0.5
+active_radius_mm = 2.5
+active_thickness_mm = 0.1
+
+[capsules.312]
+description = "Generic 5 cm x 1 cm disk (assumed for all sources, NOT the real capsule): acrylic body, 0.5 mm acrylic window, small polyethylene active deposit"
+body_material = "G4_PLEXIGLASS"
+cavity_material = "G4_AIR"
+window_material = "G4_PLEXIGLASS"
+active_material = "G4_POLYETHYLENE"
+body_radius_mm = 25.0
+body_length_mm = 9.5
+cavity_radius_mm = 20.0
+cavity_depth_mm = 5.0
+window_thickness_mm = 0.5
+active_radius_mm = 2.5
+active_thickness_mm = 0.1
+
+[capsules.319]
+description = "Generic 5 cm x 1 cm disk (assumed for all sources, NOT the real capsule): acrylic body, 0.5 mm acrylic window, small polyethylene active deposit"
+body_material = "G4_PLEXIGLASS"
+cavity_material = "G4_AIR"
+window_material = "G4_PLEXIGLASS"
+active_material = "G4_POLYETHYLENE"
+body_radius_mm = 25.0
+body_length_mm = 9.5
+cavity_radius_mm = 20.0
+cavity_depth_mm = 5.0
+window_thickness_mm = 0.5
+active_radius_mm = 2.5
+active_thickness_mm = 0.1
+
+[capsules.332]
+description = "Generic 5 cm x 1 cm disk (assumed for all sources, NOT the real capsule): acrylic body, 0.5 mm acrylic window, small polyethylene active deposit"
+body_material = "G4_PLEXIGLASS"
+cavity_material = "G4_AIR"
+window_material = "G4_PLEXIGLASS"
+active_material = "G4_POLYETHYLENE"
+body_radius_mm = 25.0
+body_length_mm = 9.5
+cavity_radius_mm = 20.0
+cavity_depth_mm = 5.0
+window_thickness_mm = 0.5
+active_radius_mm = 2.5
+active_thickness_mm = 0.1
+
+[physics]
+em_option = "option4"
+default_cut_mm = 0.7
+capsule_cut_mm = 0.01
+atomic_deexcitation = true
 
 [source.cosmic_muons]
 model = "guan"
@@ -42,19 +138,35 @@ max_gev = 100.0
 nodes = 2048
 
 [optics]
-enable = false
+enable = true
 
-[readout]
-record_steps = false
+[optics.scintillator]
+emission_min_ev = 2.5
+emission_max_ev = 3.5
+yield_per_mev = 10000.0
+resolution_scale = 1.0
+decay_ns = 2.1
+refractive_index = 1.58
+absorption_length_cm = 200.0
+
+[optics.wrap]
+reflectivity = 0.95
+
+[optics.air]
+refractive_index = 1.0003
+
+[optics.sensor]
+quantum_efficiency = 0.25
 
 [readout.raw_hits]
 enable = true
 window_ns = 10.0
 
-[readout.thresholds]
-mwpc_mev = 0.001
-delta_e_mev = 0.05
-scintillator_mev = 0.1
+[readout.vf48]
+adc_per_photoelectron = 1.0
+event_period_ns = 1.0e7
+time_resolution_ns = 0.25
 
 [geometry]
+version = "unversioned; identified by the recorded fingerprint"
 file = "../geometry/world.gdml"

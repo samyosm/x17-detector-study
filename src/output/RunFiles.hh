@@ -10,3 +10,4 @@ void PrepareBatchOutput(const Configuration &config);
 void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz);
 void CompleteRunFile(const Configuration &config, int runId);
 void MergeCompletedRun(const Configuration &config);
+void EmbedRunInfo(const Configuration &config);

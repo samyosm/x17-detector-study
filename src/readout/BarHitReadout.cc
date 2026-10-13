@@ -30,9 +30,9 @@ std::vector<BarHit> BarHitReadout::Hits() {
     std::sort(deposits.begin(), deposits.end(),
               [](const Deposit &a, const Deposit &b) { return a.time < b.time; });
     for (std::size_t first = 0, last; first < deposits.size(); first = last) {
-      BarHit hit{arm + 1, 0, 0, 0};
+      BarHit hit{arm + 1, 0, 0, 0, deposits[first].time};
       for (last = first; last < deposits.size() &&
-                         (last == first || deposits[last].time - deposits[last - 1].time <= window_);
+                         deposits[last].time - deposits[first].time <= window_;
            ++last) {
         hit.energy += deposits[last].energy;
         hit.position += deposits[last].energy * deposits[last].position;

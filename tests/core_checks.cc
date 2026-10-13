@@ -156,27 +156,28 @@ void CheckTwoBodyMomentum() {
 }
 
 void CheckRootSchema() {
-  DefineRootTrees();
+  DefineRootTrees(true);
   auto *output = G4AnalysisManager::Instance();
-  const char *names[] = {"events", "photon_hits", "cosmic_arms",
-                         "cosmic_events", "cosmic_steps", "raw_hits", "truth"};
-  const std::size_t columns[] = {92, 4, 14, 18, 14, 5, 6};
-  Require(output->GetNofNtuples() == 7, "Output tree count changed");
-  for (int tree = 0; tree < 7; ++tree) {
+  const char *names[] = {"vf48", "truth", "hit_truth", "events",
+                         "photon_hits", "cosmic_arms", "cosmic_events",
+                         "cosmic_steps"};
+  const std::size_t columns[] = {3, 6, 7, 92, 4, 14, 18, 14};
+  Require(output->GetNofNtuples() == 8, "Output tree count changed");
+  for (int tree = 0; tree < 8; ++tree) {
     const auto *booking = output->GetNtuple(tree);
     Require(booking && booking->name() == names[tree],
             "Output tree order changed");
     Require(booking->columns().size() == columns[tree],
             "Output column count changed");
   }
-  const auto &eventColumns = output->GetNtuple(0)->columns();
+  const auto &eventColumns = output->GetNtuple(3)->columns();
   Require(eventColumns[12].name() == "scint_01_edep_MeV",
           "Scintillator column order changed");
   Require(eventColumns[28].name() == "pmt_01_D_photons",
           "Sensor column order changed");
   Require(eventColumns[91].name() == "pmt_16_U_first_time_ns",
           "Last sensor column changed");
-  Require(output->GetNtuple(3)->columns()[17].name() ==
+  Require(output->GetNtuple(6)->columns()[17].name() ==
               "opening_angle_z25mm_deg",
           "Offset-angle column changed");
 }
