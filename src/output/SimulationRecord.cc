@@ -1,3 +1,5 @@
+#include "physics/OpticalMaterials.hh"
+#include "readout/LightMap.hh"
 #include "readout/Vf48Channels.hh"
 #include "geometry/DetectorLayout.hh"
 #include "output/SimulationRecord.hh"
@@ -67,15 +69,24 @@ void WriteSimulationRecord(const Configuration &config,
       for (bool uEnd : {false, true})
         record << "channel_" << vf48::ChannelLabel(scintillator, uEnd) << " = \""
                << vf48::FieldName(scintillator, uEnd) << "\"\n";
-    if (config.Get<bool>("optics.enable", false))
+    if (config.Get<bool>("optics.enable", false)) {
       record << "\n[optics]\n"
+             << "mode = \"" << config.Get<std::string>("optics.mode", "tracking") << "\"\n"
+             << "fold_efficiency_into_yield = " << (FoldsEfficiencyIntoYield(config) ? "true" : "false") << "\n"
              << "yield_per_mev = " << config.Get<double>("optics.scintillator.yield_per_mev") << "\n"
              << "absorption_length_cm = " << config.Get<double>("optics.scintillator.absorption_length_cm") << "\n"
              << "refractive_index = " << config.Get<double>("optics.scintillator.refractive_index") << "\n"
+             << "quenching = \"Geant4 Birks saturation of the visible energy (G4EmSaturation), in both optics modes\"\n"
              << "wrap = \"diffuse (Lambertian) reflector on every bar face; PLACEHOLDER reflectivity, not measured\"\n"
              << "wrap_reflectivity = " << config.Get<double>("optics.wrap.reflectivity") << "\n"
              << "decay_ns = " << config.Get<double>("optics.scintillator.decay_ns") << "\n"
              << "sensor_quantum_efficiency = " << config.Get<double>("optics.sensor.quantum_efficiency") << "\n";
+      if (UsesLightMap(config))
+        record << "light_map = \"PMT photon counts are Poisson draws from the collection probabilities tabulated in the "
+                  "light map, built by tracking optical photons with this wrap, absorption length and refractive index\"\n"
+               << "light_map_file = \"" << LightMap::File(config).filename().string() << "\"\n"
+               << "light_map_photons_per_cell = " << config.Get<double>("optics.light_map.photons_per_cell") << "\n";
+    }
   }
   if (lab) {
     auto source = ReadLabSource(config);

@@ -1,6 +1,7 @@
 #include "output/RunFiles.hh"
 #include "output/SimulationRecord.hh"
 #include "physics/MuonModel.hh"
+#include "physics/OpticalMaterials.hh"
 #include "physics/PhysicsList.hh"
 #include "G4Version.hh"
 #include "Randomize.hh"
@@ -74,7 +75,7 @@ void PrepareRunFiles(const Configuration &config, int runId, double cosmicRateHz
   std::ofstream manifest(outputFile + ".run.txt");
   manifest << G4Version
            << "\nPhysics: " << DescribePhysics(config) << '\n'
-           << "Optical physics: " << config.Get<bool>("optics.enable", false)
+           << "Optical physics: " << TracksOpticalPhotons(config)
            << "\nSeed: " << config.Get<long>("runtime.random_seed")
            << "\nRandom engine: " << G4Random::getTheEngine()->name()
            << "\nRequested events: " << config.Get<int>("runtime.events")

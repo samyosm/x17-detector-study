@@ -41,7 +41,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     const int sensor = FindCrossedEndSensor(*step);
     if (sensor < 0) return;
     if (G4UniformRand() < quantumEfficiency_)
-        eventAction_->RecordDetectedPhoton(sensor + 1, step->GetPostStepPoint()->GetGlobalTime(),
-                                  step->GetPreStepPoint()->GetKineticEnergy());
+        eventAction_->RecordDetectedPhoton(sensor + 1, *step);
     track->SetTrackStatus(fStopAndKill);
 }

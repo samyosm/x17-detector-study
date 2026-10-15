@@ -37,7 +37,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
         config_.Get<double>("physics.capsule_cut_mm") * mm);
   }
   ApplyReferenceVisualization();
-  if (!config_.Get<bool>("optics.enable", false))
+  if (!TracksOpticalPhotons(config_))
     return parser_.GetWorldVolume();
 
   ConfigureOpticalMaterials(config_, *scintillator->GetMaterial(),

@@ -20,7 +20,7 @@ public:
     void BeginOfEventAction(const G4Event* event) override;
     void EndOfEventAction(const G4Event* event) override;
     void RecordScintillatorEnergy(int bar, double energy);
-    void RecordDetectedPhoton(int channel, double time, double energy);
+    void RecordDetectedPhoton(int channel, const G4Step& step);
 private:
     std::unique_ptr<CosmicReadout> cosmic_;
     std::unique_ptr<BarHitReadout> barHits_;
@@ -32,6 +32,7 @@ private:
     std::vector<DetectedPhoton> photons_;
     EventReadout readout_;
     double adcPerPhotoelectron_ = 1.0;
+    bool lightMap_ = false;
     double eventPeriod_ = 0.0;
     double timeResolution_ = 0.0;
     const PrimaryGeneratorAction* source_;

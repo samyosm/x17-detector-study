@@ -1,5 +1,6 @@
 #include "application/actions/ActionInitialization.hh"
 #include "output/RunFiles.hh"
+#include "physics/OpticalMaterials.hh"
 #include "application/actions/EventAction.hh"
 #include "application/actions/RunAction.hh"
 #include "application/actions/SteppingAction.hh"
@@ -16,8 +17,8 @@ void ActionInitialization::Build() const {
   auto *eventAction = new EventAction(source, config_);
   SetUserAction(eventAction);
   const auto efficiency =
-      config_.Get<bool>("optics.enable", false)
-          ? config_.Get<double>("optics.sensor.quantum_efficiency")
+      TracksOpticalPhotons(config_)
+          ? (FoldsEfficiencyIntoYield(config_) ? 1.0 : config_.Get<double>("optics.sensor.quantum_efficiency"))
           : 0.0;
   SetUserAction(new SteppingAction(eventAction, efficiency));
 }

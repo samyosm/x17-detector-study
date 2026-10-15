@@ -1,36 +1,21 @@
 #include "application/SourceSelection.hh"
 #include <algorithm>
-#include <cctype>
+#include <ctime>
 #include <filesystem>
-#include <sstream>
 #include <stdexcept>
 
 namespace {
-std::string Lowercase(std::string text) {
-  std::transform(text.begin(), text.end(), text.begin(),
-                 [](unsigned char letter) { return std::tolower(letter); });
-  return text;
-}
-
-std::string Number(double value) {
-  std::ostringstream text;
-  text << value;
-  return text.str();
-}
-
-std::string PlacementLabel(const Configuration &config, bool encapsulated) {
-  std::string label = "_x" + Number(config.Get<double>("placement.x_cm")) + "_y" +
-                      Number(config.Get<double>("placement.y_cm"));
-  if (config.Get<std::string>("placement.z_mode") == "uniform")
-    label += "_z" + Number(config.Get<double>("placement.z_min_cm")) + "to" +
-             Number(config.Get<double>("placement.z_max_cm"));
-  else
-    label += "_z" + Number(config.Get<double>("placement.z_cm"));
-  if (encapsulated) {
-    const auto direction = config.Vector("placement.orientation");
-    label += "_o" + Number(direction[0]) + "_" + Number(direction[1]) + "_" + Number(direction[2]);
+// Date of the run (the date the activity is decayed to), written yyyy.mm.dd.
+std::string RunDate(const Configuration &config) {
+  std::string date = config.Get<std::string>("source.lab.activity_date", "");
+  if (date.empty()) {
+    const std::time_t now = std::time(nullptr);
+    char buffer[16];
+    std::strftime(buffer, sizeof buffer, "%Y-%m-%d", std::localtime(&now));
+    date = buffer;
   }
-  return label;
+  std::replace(date.begin(), date.end(), '-', '.');
+  return date;
 }
 } // namespace
 
@@ -39,7 +24,7 @@ void SelectSource(Configuration &config, const SourceOverrides &overrides) {
   std::string id;
   if (overrides.source == "muons") {
     config.Set("source.cosmic_muons.enable", true);
-    id = "muons_seed" + seed;
+    id = "0=cosmic-muons-" + RunDate(config) + "-seed" + seed;
   } else {
     const auto labId = std::stoi(overrides.source);
     const auto name = config.Get<std::string>("sources." + overrides.source + ".name");
@@ -53,11 +38,9 @@ void SelectSource(Configuration &config, const SourceOverrides &overrides) {
     }
     if (overrides.bare)
       config.Set("source.lab.encapsulated", false);
-    const bool encapsulated = config.Get<bool>("source.lab.encapsulated", true);
     config.Set("source.lab.enable", true);
     config.Set("source.lab.id", labId);
-    id = "lab" + overrides.source + "_" + Lowercase(name) + (encapsulated ? "_capsule" : "_bare") +
-         PlacementLabel(config, encapsulated) + "_seed" + seed;
+    id = overrides.source + "=" + name + "-" + RunDate(config) + "-seed" + seed;
   }
   config.Set("simulation.id", id);
   config.Set("runtime.output_file",

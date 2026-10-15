@@ -3,10 +3,7 @@
 #include "G4Track.hh"
 #include "G4VProcess.hh"
 
-void EventClock::Reset() {
-  creationTimes_.clear();
-  origin_ = 0.0;
-}
+void EventClock::Reset() { creationTimes_.clear(); }
 
 double EventClock::CreationTime(const G4Track *track) const {
   const auto found = creationTimes_.find(track);
@@ -21,13 +18,20 @@ void EventClock::RegisterSecondaries(const G4Step &step) {
   const auto *process = step.GetPostStepPoint()->GetProcessDefinedStep();
   const bool primaryDecay = track->GetParentID() == 0 && process &&
                             process->GetProcessName() == "RadioactiveDecay";
-  if (primaryDecay)
-    origin_ = step.GetPostStepPoint()->GetGlobalTime();
-  const double creation =
-      primaryDecay ? 0.0
-                   : CreationTime(track) + step.GetPostStepPoint()->GetLocalTime();
-  for (const auto *secondary : *secondaries)
+  // When the optical processes are registered, an at-rest process that acts after the decay overwrites
+  // the post-step time, losing the decay delay; the decay products still carry the right global time.
+  const bool decayAtRest = step.GetPostStepPoint()->GetStepStatus() == fAtRestDoItProc;
+  for (const auto *secondary : *secondaries) {
+    double creation;
+    if (primaryDecay)
+      creation = 0.0;
+    else if (decayAtRest)
+      creation = CreationTime(track) + step.GetPreStepPoint()->GetLocalTime() +
+                 (secondary->GetGlobalTime() - step.GetPreStepPoint()->GetGlobalTime());
+    else
+      creation = CreationTime(track) + step.GetPostStepPoint()->GetLocalTime();
     creationTimes_[secondary] = creation;
+  }
 }
 
 double EventClock::StepTime(const G4Step &step) const {

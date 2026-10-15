@@ -9,6 +9,8 @@
 #include "physics/CosmicObservables.hh"
 #include "physics/PairObservables.hh"
 #include "G4Event.hh"
+#include "G4Poisson.hh"
+#include "physics/OpticalMaterials.hh"
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -36,6 +38,7 @@ EventAction::EventAction(const PrimaryGeneratorAction* source, const Configurati
       checkpointEvents_(UsesCheckpoints(config) ? CheckpointEventCount(config) : 0) {
     if (config.Get<bool>("readout.raw_hits.enable", false)) {
         barHits_ = std::make_unique<BarHitReadout>(config);
+        lightMap_ = UsesLightMap(config);
         adcPerPhotoelectron_ = config.Get<double>("readout.vf48.adc_per_photoelectron");
         eventPeriod_ = config.Get<double>("readout.vf48.event_period_ns") * ns;
         timeResolution_ = config.Get<double>("readout.vf48.time_resolution_ns") * ns;
@@ -78,12 +81,15 @@ void EventAction::RecordScintillatorEnergy(int bar, double energy) {
         readout_.depositedEnergy[bar - 1] += energy;
 }
 
-void EventAction::RecordDetectedPhoton(int channel, double time, double energy) {
+void EventAction::RecordDetectedPhoton(int channel, const G4Step& step) {
     if (channel < 1 || channel > detector::sensorCount) return;
     if (barHits_) {
-        photons_.push_back({channel - 1, clock_->SinceDecay(time)});
+        // Photon time on the same clock as the deposits: since the decay of the primary.
+        photons_.push_back({channel - 1, clock_->StepTime(step)});
         return;
     }
+    const double time = step.GetPostStepPoint()->GetGlobalTime();
+    const double energy = step.GetPreStepPoint()->GetKineticEnergy();
     const int sensorIndex = channel - 1;
     if (readout_.photonCount[sensorIndex] == 0 || time / ns < readout_.firstPhotonTimeNs[sensorIndex])
         readout_.firstPhotonTimeNs[sensorIndex] = time / ns;
@@ -119,8 +125,10 @@ void EventAction::EndOfEventAction(const G4Event* event) {
             long long slot = std::llround(hits[i].time / timeResolution_);
             while (!usedSlots.insert(slot).second) ++slot;
             std::array<int, 2> adc;
-            for (int end = 0; end < 2; ++end)
-                adc[end] = static_cast<int>(std::min(adcMaximum, std::round(counts[i][end] * adcPerPhotoelectron_)));
+            for (int end = 0; end < 2; ++end) {
+                const double detected = lightMap_ ? G4Poisson(hits[i].photons[end]) : counts[i][end];
+                adc[end] = static_cast<int>(std::min(adcMaximum, std::round(detected * adcPerPhotoelectron_)));
+            }
             WriteRawHit(readout_.eventId, static_cast<int>(i), hits[i], eventTime + slot * timeResolution_, adc);
         }
         WriteTruth(readout_.eventId, source_->GetLabId(), *event);

@@ -5,7 +5,20 @@
 #include "G4OpticalSurface.hh"
 #include "G4SystemOfUnits.hh"
 #include "configuration/Configuration.hh"
+#include <string>
 #include <vector>
+
+bool TracksOpticalPhotons(const Configuration &config) {
+  return config.Get<bool>("optics.enable", false) && config.Get<std::string>("optics.mode", "tracking") == "tracking";
+}
+
+bool UsesLightMap(const Configuration &config) {
+  return config.Get<bool>("optics.enable", false) && config.Get<std::string>("optics.mode", "tracking") == "light_map";
+}
+
+bool FoldsEfficiencyIntoYield(const Configuration &config) {
+  return TracksOpticalPhotons(config) && config.Get<bool>("optics.fold_efficiency_into_yield", false);
+}
 
 void ConfigureOpticalMaterials(const Configuration &config,
                                G4Material &scintillatorMaterial,
@@ -26,7 +39,8 @@ void ConfigureOpticalMaterials(const Configuration &config,
   scintillation->AddProperty("SCINTILLATIONCOMPONENT1", energies, flat);
   scintillation->AddConstProperty(
       "SCINTILLATIONYIELD",
-      config.Get<double>("optics.scintillator.yield_per_mev") / MeV);
+      config.Get<double>("optics.scintillator.yield_per_mev") *
+          (FoldsEfficiencyIntoYield(config) ? config.Get<double>("optics.sensor.quantum_efficiency") : 1.0) / MeV);
   scintillation->AddConstProperty(
       "RESOLUTIONSCALE",
       config.Get<double>("optics.scintillator.resolution_scale"));

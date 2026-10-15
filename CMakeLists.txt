@@ -7,6 +7,7 @@ find_program(ROOT_HADD_EXECUTABLE hadd REQUIRED)
 find_program(ROOT_EXECUTABLE root REQUIRED)
 
 add_library(detector_core STATIC
+    src/application/LightMapBuilder.cc
     src/application/Simulation.cc
     src/application/SourceSelection.cc
     src/application/UiCommand.cc
@@ -47,6 +48,7 @@ add_library(detector_core STATIC
     src/readout/Vf48Channels.cc
     src/readout/CosmicReadout.cc
     src/readout/EventClock.cc
+    src/readout/LightMap.cc
     src/readout/OpticalSensor.cc
     src/visualization/CosmicSourceVisualization.cc
     src/visualization/DetectorStyle.cc

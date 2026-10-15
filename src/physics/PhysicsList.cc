@@ -6,6 +6,7 @@
 #include "G4HadronicParameters.hh"
 #include "G4OpticalParameters.hh"
 #include "G4OpticalPhysics.hh"
+#include "physics/OpticalMaterials.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4SystemOfUnits.hh"
 #include "configuration/Configuration.hh"
@@ -40,7 +41,7 @@ G4VModularPhysicsList *CreatePhysicsList(const Configuration &config) {
         std::numeric_limits<double>::max());
     physics->RegisterPhysics(new G4RadioactiveDecayPhysics);
   }
-  if (config.Get<bool>("optics.enable", false))
+  if (TracksOpticalPhotons(config))
     physics->RegisterPhysics(new G4OpticalPhysics);
   G4OpticalParameters::Instance()->SetProcessActivation("Cerenkov", false);
   return physics;
@@ -59,7 +60,7 @@ std::string DescribePhysics(const Configuration &config) {
   if (lab)
     text << "; atomic de-excitation (fluorescence, Auger) "
          << (config.Get<bool>("physics.atomic_deexcitation") ? "on" : "off");
-  if (config.Get<bool>("optics.enable", false))
+  if (TracksOpticalPhotons(config))
     text << " + G4OpticalPhysics (scintillation, absorption, boundary; Cerenkov off)";
   return text.str();
 }

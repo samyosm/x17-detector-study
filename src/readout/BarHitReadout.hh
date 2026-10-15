@@ -1,9 +1,11 @@
 #pragma once
 #include "configuration/Configuration.hh"
 #include "geometry/DetectorLayout.hh"
+#include "readout/LightMap.hh"
 #include <array>
 #include <vector>
 
+class G4EmSaturation;
 class G4Step;
 
 struct BarHit {
@@ -12,6 +14,7 @@ struct BarHit {
   double position;
   double time;
   double start;
+  std::array<double, 2> photons{}; // expected detected photons at the D and U ends (light-map mode)
 };
 
 class BarHitReadout {
@@ -26,7 +29,12 @@ private:
     double time;
     double energy;
     double position;
+    std::array<double, 2> photons;
   };
   double window_;
+  const LightMap *lightMap_ = nullptr;
+  G4EmSaturation *saturation_ = nullptr;
+  BarShape shape_{};
+  double detectedPhotonsPerMeV_ = 0.0;
   std::array<std::vector<Deposit>, detector::armCount> deposits_;
 };

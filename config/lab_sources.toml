@@ -1,7 +1,7 @@
 [runtime]
 mode = "batch"
 threads = 20
-events = 20_000_000
+events = 50_000_000
 checkpoint_events = 20_000
 progress_interval = 100000
 output_directory = "data/simulations"
@@ -139,6 +139,15 @@ nodes = 2048
 
 [optics]
 enable = true
+mode = "light_map"
+fold_efficiency_into_yield = true
+
+[optics.light_map]
+file = "../data/light_map.txt"
+bands_y = 56
+bands_depth = 5
+bands_width = 6
+photons_per_cell = 40000
 
 [optics.scintillator]
 emission_min_ev = 2.5
